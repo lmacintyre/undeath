@@ -26,6 +26,7 @@
 
 //// including my headers :o)
 //
+#include "game.h"
 #include "texture.h"
 #include "animation.h"
 #include "vec2d.h"
@@ -46,12 +47,9 @@
 
 using std::vector;
 
-const int FPS = 60;	//unused as of now
-
-class Game
+class MyGame: public Game
 {
 	private:
-		bool finished;
 
 		vector<Actor*> players;
 		vector<Actor*> enemies;
@@ -62,25 +60,18 @@ class Game
 		
 		SDL_Surface* load_surface;
 		SDL_Surface* blit_surface;
-		
-		float perspective_width, perspective_height;
-		Rect screen_rect;
 
-		bool fps_cap;
 		Uint32 last_tick;
 		long delta_t;
-		
-		SDL_Window* window;
-		SDL_Event event;
 		
 		//Temporary! Put this into some kind of level object!
 		LevelBG background;
 		
 	public:
-		Game( void );
+		MyGame( void ) {};
 		
 		bool init( void );
-		bool initSDL( void );
+		bool initSDL( void ) { return Game::initSDL( "Skeleton's Day Out" ); }
 		bool initGL( void );
 
 		void load_textures();
@@ -95,42 +86,14 @@ class Game
 		void quit( void );
 };
 
-Game::Game( void )
-{
-	window = NULL;
-	
-	finished = false;
-}
-
-bool Game::initSDL( void )
-{
-	SDL_Init( SDL_INIT_VIDEO );
-	
-	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
-	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
-	
-	window =
-	SDL_CreateWindow( "SKELETON'S DAY OUT", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-												WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL );
-	if( window == NULL )
-	{
-		printf( "Could not create window: %s", SDL_GetError() );
-		return false;
-	}
-	
-	SDL_GL_CreateContext( window );
-	SDL_GL_SetSwapInterval( 1 );
-	
-	return true;
-}
-
-bool Game::initGL( void )
+bool MyGame::initGL( void )
 {
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
+
+	float perspective_width, perspective_height;
 
 	if( WINDOW_WIDTH > WINDOW_HEIGHT )
 	{
@@ -146,6 +109,8 @@ bool Game::initGL( void )
 			 -1* perspective_height, perspective_height,
 			 0.f, 1.f );
 
+	display = Rect( Vec2d( -1* perspective_width, -1* perspective_height ), perspective_width * 2, perspective_height * 2 );
+
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	
@@ -154,16 +119,13 @@ bool Game::initGL( void )
 	return true;
 }
 
-bool Game::init( void )
+bool MyGame::init( void )
 {
 	printf( "Init SDL..." );
 	if( !initSDL() ) return false;
 	printf( "successful.\nInit opengl..." );
 	if( !initGL() ) return false;
 	printf( "successful.\n" );
-
-	screen_rect = Rect( Vec2d( -1* perspective_width, -1* perspective_height ),
-												2* perspective_width, 2* perspective_height );
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 1.f ) ) );
@@ -199,7 +161,7 @@ bool Game::init( void )
 	fps_cap = false;
 }
 
-void Game::load_textures()
+void MyGame::load_textures()
 {
 	printf( "LOAD PLAYER\n" );
 	load_surface = IMG_Load( "res/skele_sheet.png" ); 
@@ -228,7 +190,7 @@ void Game::load_textures()
 	printf( "DONE\n" );
 }
 
-void Game::start_loop( void )
+void MyGame::start_loop( void )
 {
 	while( !finished )
 	{
@@ -243,26 +205,13 @@ void Game::start_loop( void )
 	} quit();
 }
 
-void Game::render( void )
+void MyGame::render( void )
 {
 	glClear( GL_COLOR_BUFFER_BIT );
 	
 	glPushMatrix();
 	
-	/*
-	//Render a simple background
-	glBegin( GL_QUADS );
-		glColor3f( 0.f, 0.f, 0.f );
-		glVertex2f( -1 * perspective_width, -1 * perspective_height );
-		glVertex2f(      perspective_width, -1 * perspective_height );
-		
-		glColor3f( 0.5f, 0.f, 0.f );
-		glVertex2f(      perspective_width,      perspective_height );
-		glVertex2f( -1 * perspective_width,      perspective_height );
-	glEnd();
-	*/
-	
-	background.render( screen_rect, players[0]->get_position() );
+	background.render( display, players[0]->get_position() );
 
 	glTranslatef( players[0]->get_position().get_a() * -1, players[0]->get_position().get_b() * -1, 0.f );
 
@@ -286,7 +235,7 @@ void Game::render( void )
 	render_hud( (Player*) players[0] );
 }
 
-void Game::render_hud( Player* p )
+void MyGame::render_hud( Player* p )
 {
 	//render health blocks
 	glPushMatrix();
@@ -296,9 +245,9 @@ void Game::render_hud( Player* p )
 		if( i < p->hp ) glColor3f( 0.f, 1.f, 0.f );
 		else glColor3f( 1.f, 0.f, 0.f );
 	
-		float start_x = -1 * perspective_width, start_y = perspective_height;
-		float hp_size = perspective_width / 15;
-		float margin = perspective_width / 15;
+		float start_x = display.vertices[0].get_a(), start_y = display.vertices[0].get_b();
+		float hp_size = display.w / 15;
+		float margin =  display.w / 15;
 		float spacing = hp_size / 3;
 		
 		glBegin( GL_QUADS );
@@ -311,8 +260,8 @@ void Game::render_hud( Player* p )
 	glPopMatrix();
 }
 
-//TODO -- Move into event file?
-void Game::poll_input( bool* keys )
+//TODO -- Move into event file? Game class?
+void MyGame::poll_input( bool* keys )
 {
 	while( SDL_PollEvent( &event ) )
 	{
@@ -382,7 +331,7 @@ void Game::poll_input( bool* keys )
 	}
 }
 
-void Game::logic( long d )
+void MyGame::logic( long d )
 {
 	float dt = (float) d / 100;
 	
@@ -393,7 +342,7 @@ void Game::logic( long d )
 		enemies[i]->update( ground_set, players, dt );
 }
 
-void Game::quit( void )
+void MyGame::quit( void )
 {
 	SDL_DestroyWindow( window );
 	SDL_Quit();
@@ -401,7 +350,7 @@ void Game::quit( void )
 
 int main( int argc, char* argv[] )
 {
-	Game game;
+	MyGame game;
 	printf("Game created. Initializing...\n");
 	if( game.init() )
 	{
