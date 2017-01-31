@@ -83,15 +83,13 @@ class MyGame: public Game
 
 		void poll_input( bool* keys );
 		void logic( long d );
-		void quit( void );
 };
 
 bool MyGame::initGL( void )
 {
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		
+	
 	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
 
 	float perspective_width, perspective_height;
 
@@ -112,7 +110,6 @@ bool MyGame::initGL( void )
 	display = Rect( Vec2d( -1* perspective_width, -1* perspective_height ), perspective_width * 2, perspective_height * 2 );
 
 	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
 	
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
@@ -340,12 +337,6 @@ void MyGame::logic( long d )
 	
 	for( int i=0; i<enemies.size(); i++ )
 		enemies[i]->update( ground_set, players, dt );
-}
-
-void MyGame::quit( void )
-{
-	SDL_DestroyWindow( window );
-	SDL_Quit();
 }
 
 int main( int argc, char* argv[] )

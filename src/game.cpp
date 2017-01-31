@@ -20,6 +20,8 @@ class Game
 
 		Game( void );
 		virtual bool initSDL( char* title );
+		virtual bool initGL( void );
+		virtual void quit( void );
 };
 
 Game::Game( void )
@@ -54,4 +56,27 @@ bool Game::initSDL( char* title )
 	SDL_GL_SetSwapInterval( 1 );
 	
 	return true;
+}
+
+bool Game::initGL( void )
+{
+
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+	
+	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+
+	return true;
+}
+
+
+void Game::quit( void )
+{
+	SDL_DestroyWindow( window );
+	SDL_Quit();
 }

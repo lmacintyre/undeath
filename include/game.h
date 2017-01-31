@@ -20,6 +20,8 @@ class Game
 
 		Game( void );
 		virtual bool initSDL( char* title );
+		virtual bool initGL( void );
+		virtual void quit( void );
 };
 
 #endif
