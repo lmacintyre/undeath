@@ -133,6 +133,8 @@ bool MyGame::init( void )
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, 0.5f ), 0 ) );
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 0.f, 1.f ), 0 ) );
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, -1.f ), 0 ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 2.f, 0.f ), 1 ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( -2.f, 0.f ), 1 ) );
 /*
 	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( -1.f, -2.f ), 0 ) );
 	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( 0.f, -2.f ), 0 ) );
@@ -182,9 +184,11 @@ void MyGame::load_textures()
 	for( int i=0; i<walls.size(); i++ ) walls[i].sheet = wall_sheet;
 
 	//TODO -- Again, level object
+	//background.ground_texture = wall_sheet;
+	background.level_texture = wall_sheet;
 	background.ground_texture = wall_sheet;
 
-	printf( "DONE\n" );
+	if( debug ) printf( "DONE\n" );
 }
 
 void MyGame::start_loop( void )

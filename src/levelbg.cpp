@@ -44,7 +44,19 @@ LevelBG::LevelBG( Texture* sky_texture, Texture* ground_texture, Texture* level_
 	this->level_texture = level_texture;
 
 	this->sky_clip = Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f);
-	this->ground_clip = Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f );
+	this->ground_clip = Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f );
+
+	vector<Rect> level_clip0;
+	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_tiles.push_back( level_clip0 );
+	vector<Rect> level_clip1;
+	level_clip1.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_clip1.push_back( Rect( Vec2d( 0.5f, 0.f ), 0.5f, 1.f ) );
+	level_clip1.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_tiles.push_back( level_clip1 );
+	level_tiles.push_back( level_clip0 );
 }
 
 void LevelBG::render( Rect where, Vec2d scroll )
@@ -104,23 +116,26 @@ void LevelBG::render( Rect where, Vec2d scroll )
 	{
 		glColor3f( 0.6f, 0.6f, 0.6f );
 	
-		x_start = (where.w/2)*-1;
+		//Start from screen left? start from first tiling before screen left...
+		// Player.x / total tile width - total tile width?
+
+		//Then repeat for screen width / total tiles width + 1
+
+		x_start = (where.w/2)*-1 - fmod(scroll.get_a(), tile_size) - tile_size;
 		y_start = scroll.get_b() * -1 - tile_size;
 
 		half_height = where.h/2;
 
 		y_tiles = ( half_height - scroll.get_b() ) / tile_size + 1;
-		x_tiles = (int) ( (half_height/tile_size) * (where.w/half_height) + 1 );
+		x_tiles = ceil( where.w / tile_size ) + 2;
 		
 		scroll_by = Vec2d( scroll.get_a(), scroll.get_b()/2 );
 		
 		for( int i=0; i<x_tiles; i++ )
 			for( int j=0; j<y_tiles; j++ )
 			{
-				ground_texture->render( ground_clip.add( Vec2d( scroll.get_a(), 0.f ) ),
-																Rect( Vec2d( x_start + i*tile_size, y_start - j*tile_size ),
-																tile_size,
-																tile_size ) );
+				ground_texture->render( ground_clip, Rect( Vec2d( x_start + i*tile_size, y_start - j*tile_size ),
+																tile_size, tile_size ) );
 			}
 	}
 		
@@ -129,19 +144,29 @@ void LevelBG::render( Rect where, Vec2d scroll )
 	{
 		glColor3f( 0.6f, 0.6f, 0.6f );
 		
-		x_start = where.w/2 * -1;
+		y_tiles = level_tiles.size();
+		x_tiles = level_tiles[0].size();
+
+		float repeat_width = ( x_tiles * tile_size );
+		int reps = ceil( where.w / repeat_width ) + 2;
+
+		x_start = (where.w/2) * -1 - fmod(scroll.get_a(), repeat_width) - repeat_width;
 		y_start = scroll.get_b() * -1 - tile_size;
 		
-		x_tiles = level_tiles.size();
-		y_tiles = level_tiles[0].size();
-		
-		for( int i=0; i<x_tiles; i++ )
-			for( int j=0; j<y_tiles; j++ )
-			{
-				level_texture->render( level_tiles[i][j],
-															 Rect( Vec2d( x_start + i*tile_size, y_start + j*tile_size ),
-															 tile_size,
-															 tile_size ) );
-			}
+		printf("%f\n", -1 - fmod(scroll.get_a(), repeat_width));
+
+		float rep_start;
+		for( int r=0; r<reps; r++ )
+		{
+			rep_start = x_start + r*repeat_width;
+			for( int i=0; i<y_tiles; i++ )
+				for( int j=0; j<x_tiles; j++ )
+				{
+					level_texture->render( level_tiles[i][j],
+											 Rect( Vec2d( rep_start + j*tile_size, y_start + i*tile_size ),
+											 tile_size,
+											 tile_size ) );
+				}
+		}
 	}
 }
