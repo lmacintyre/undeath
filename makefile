@@ -7,6 +7,11 @@ FLAGS	= -I include
 all: $(ENG) $(GAME)
 	$(CC) $(ENG) $(GAME) $(LINKS) $(FLAGS) -o exe/skeleton.out
 
+engine: $(ENG)
+	$(CC) -c $(ENG) $(LINKS) $(FLAGS)
+
+
+
 bin/vec2d.o: src/vec2d.cpp include/vec2d.h
 	$(CC) -c -o bin/vec2d.o src/vec2d.cpp $(LINKS) $(FLAGS)
 
