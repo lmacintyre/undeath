@@ -9,8 +9,10 @@
 //
 /// Menu
 /// Text
+/// Health images
 //
-/// Enemy interaction
+/// More enemy interaction
+/// Enemy block edge finding
 //
 ////
 
