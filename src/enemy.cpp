@@ -64,8 +64,6 @@ EnemySkeleton::EnemySkeleton( void )
 	walk_anim = NULL;
 	idle_anim = NULL;
 	frame_tick = 0;
-
-	facing_right = false;
 }
 
 EnemySkeleton::EnemySkeleton( Vec2d pos )
@@ -77,7 +75,6 @@ EnemySkeleton::EnemySkeleton( Vec2d pos )
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2 ) ), 0.2, 0.4 ) );
 	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
-	render_hitbox = true;
 	
 	frame_tick = 0;
 

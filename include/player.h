@@ -11,18 +11,18 @@
 
 using std::vector;
 
-enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT };
+enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN };
 
 class Player: public Actor
 {
-	bool anim_transition;
+	bool anim_transition = false;
 
-	long last_hit;
 	long hit_delay;
+	long last_hit;
 
-	CONTROL_MODE control_mode;
+	CONTROL_MODE control_mode = CONTROL_MODE_FREE;
 
-	int jumpjuice;
+	int jumpjuice = 0;
 
 	public:
 		bool* keys_down;

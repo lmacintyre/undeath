@@ -52,31 +52,24 @@ bool Texture::load( char* path )
 
 bool Texture::load( GLuint* pixels, GLuint width, GLuint height )
 {
-	printf( "\ttexture loading...\n");
 	free_texture();
-	printf( "\tfree...\n" );
 
 	texture_width = width;
 	texture_height = height;
 
-	printf( "\tGen and bind...\n" );
 	glGenTextures( 1, &texture_id );
 	glBindTexture( GL_TEXTURE_2D, texture_id );
 
-	printf( "\tmake image...\n" );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels );
 
-	printf( "\tset parameters...\n" );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 
-	printf( "\tunbind\n" );
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	GLenum error = glGetError();
 	if( error != GL_NO_ERROR )
 	{
-		printf( "Error loading texture.\n" );
 		return false;
 	}
 

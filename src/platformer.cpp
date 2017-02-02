@@ -118,11 +118,11 @@ bool MyGame::initGL( void )
 
 bool MyGame::init( void )
 {
-	printf( "Init SDL..." );
+	if( debug ) printf( "Init SDL..." );
 	if( !initSDL() ) return false;
-	printf( "successful.\nInit opengl..." );
+	if( debug ) printf( "successful.\nInit opengl..." );
 	if( !initGL() ) return false;
-	printf( "successful.\n" );
+	if( debug ) printf( "successful.\n" );
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 1.f ) ) );
@@ -148,9 +148,9 @@ bool MyGame::init( void )
 	//TODO -- build level class
 	background = LevelBG( NULL, NULL, NULL );
 
-	printf( "load textures...\n" );
+	if( debug ) printf( "load textures...\n" );
 	load_textures();	
-	printf( "successful.\n" );
+	if( debug ) printf( "successful.\n" );
 
 	//Build ground set
 	ground_set.insert( ground_set.begin(), platforms.begin(), platforms.end() );
@@ -162,22 +162,22 @@ bool MyGame::init( void )
 
 void MyGame::load_textures()
 {
-	printf( "LOAD PLAYER\n" );
+	if( debug ) printf( "LOAD PLAYER\n" );
 	load_surface = IMG_Load( "res/skele_sheet.png" ); 
 	players[0]->sheet = new Texture();
 	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
 	
-	printf( "LOAD ENEMY\n" );
+	if( debug ) printf( "LOAD ENEMY\n" );
 	enemies[0]->sheet = new Texture();
 	enemies[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
 
-	printf( "LOAD PLATFORM\n" );
+	if( debug ) printf( "LOAD PLATFORM\n" );
 	Texture* plat_sheet = new Texture();
 	load_surface = IMG_Load( "res/plat_sheet.png" );
 	plat_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
 	for( int i=0; i<platforms.size(); i++ ) platforms[i].sheet = plat_sheet;
 	
-	printf( "LOAD WALL\n" );
+	if( debug ) printf( "LOAD WALL\n" );
 	Texture* wall_sheet = new Texture();
 	load_surface = IMG_Load( "res/wall_sheet.png" );
 	wall_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
@@ -346,10 +346,10 @@ void MyGame::logic( long d )
 int main( int argc, char* argv[] )
 {
 	MyGame game;
-	printf("Game created. Initializing...\n");
+	if( game.debug ) printf("Game created. Initializing...\n");
 	if( game.init() )
 	{
-		printf("Initialization successful. Starting game loop.\n");
+		if( game.debug ) printf("Initialization successful. Starting game loop.\n");
 		game.start_loop();
 	}
 }

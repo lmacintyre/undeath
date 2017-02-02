@@ -63,11 +63,12 @@ void LevelBG::render( Rect where, Vec2d scroll )
 {
 	int x_tiles, y_tiles;
 	float x_start, y_start;
-	float tile_size = 0.5f;
+	float tile_size = 0.75f;
 	
 	float half_height;
 	
 	Vec2d scroll_by;
+	scroll.scale( Vec2d( 1.1f, 1.1f ) );
 	
 	//Render sky
 	if( sky_texture == NULL )
@@ -152,8 +153,6 @@ void LevelBG::render( Rect where, Vec2d scroll )
 
 		x_start = (where.w/2) * -1 - fmod(scroll.get_a(), repeat_width) - repeat_width;
 		y_start = scroll.get_b() * -1 - tile_size;
-		
-		printf("%f\n", -1 - fmod(scroll.get_a(), repeat_width));
 
 		float rep_start;
 		for( int r=0; r<reps; r++ )

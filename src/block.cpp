@@ -2,8 +2,6 @@
 #include "col2d.h"
 #include "texture.h"
 
-#include <stdio.h>
-
 enum BLOCK_TYPE { BLOCK_TYPE_PLATFORM_LARGE, BLOCK_TYPE_PLATFORM_MEDIUM, BLOCK_TYPE_PLATFORM_SMALL,
 								  BLOCK_TYPE_WALL };
 
@@ -76,8 +74,6 @@ Block::Block( int type, Vec2d pos, int sprite_id )
 		clip = Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f );
 		break;
 	}
-
-	printf( "Block created\n" );
 }
 
 CollisionResult Block::collision( Rect entity )

@@ -17,12 +17,12 @@ class Actor
 
 		long frame_tick;
 		
-		bool render_hitbox;
+		bool render_hitbox = false;
 		Rect renderbox;
 		vector<Rect> hitbox;
 
-		bool facing_right;
-		bool grounded;
+		bool facing_right = true;
+		bool grounded = false;
 		
 		Vec2d position;
 		Vec2d velocity;

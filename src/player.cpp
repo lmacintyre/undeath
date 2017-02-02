@@ -23,14 +23,14 @@ enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN };
 
 class Player: public Actor
 {	
-	bool anim_transition;
+	bool anim_transition = false;
 	
 	long hit_delay; 
 	long last_hit;
 
-	CONTROL_MODE control_mode;
+	CONTROL_MODE control_mode = CONTROL_MODE_FREE;
 
-	int jumpjuice;	
+	int jumpjuice = 0;	
 	
 	public:
 		bool* keys_down;
@@ -51,15 +51,7 @@ class Player: public Actor
 
 Player::Player( void )
 {
-	control_mode = CONTROL_MODE_FREE;
-
-	grounded = false;
-	facing_right = true;
-	jumpjuice = 0;
 	hp = 0; maxhp = 0;
-
-	render_hitbox = false;
-	anim_transition = false;
 
 	walk_anim = NULL;
 	idle_anim = NULL;
@@ -78,10 +70,8 @@ Player::Player( Vec2d pos )
 
 	keys_down = new bool[KEYCOUNT];
 	for( int i=0; i<KEYCOUNT; i++ ) keys_down[i] = false;
-	
+
 	frame_tick = 0;
-	facing_right = true;
-	render_hitbox = true;
 
 	set_position( pos );
 	set_velocity( Vec2d( 0.f, 0.f ) );
@@ -201,7 +191,6 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 			if( CR.result )
 			{
 				grounded = false;
-				printf( "Collision x comp: %f\n", CR.out.get_a() );
 				if( CR.out.get_a() > 0 ) set_velocity( Vec2d( 0.05f, 0.2f ) );
 				else set_velocity( Vec2d( -0.05f, 0.2f ) );
 				hp--;
@@ -216,11 +205,7 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 	switch( control_mode )
 	{
 		case CONTROL_MODE_INVULN:
-		if( t > last_hit + hit_delay )
-		{
-			control_mode = CONTROL_MODE_FREE;
-			printf("Freed\n");
-		}
+		if( t > last_hit + hit_delay ) control_mode = CONTROL_MODE_FREE;
 
 		case CONTROL_MODE_FREE:
 		if( keys_down[KEY_UP] )
