@@ -19,12 +19,13 @@
 
 using std::vector;
 
-enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN };
+enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN, CONTROL_MODE_DEAD };
 
 class Player: public Actor
 {	
 	bool anim_transition = false;
-	
+	bool dead = false;
+
 	long hit_delay; 
 	long last_hit;
 
@@ -32,6 +33,8 @@ class Player: public Actor
 
 	int jumpjuice = 0;	
 	
+	Rect dead_box;
+
 	public:
 		bool* keys_down;
 
@@ -41,7 +44,8 @@ class Player: public Actor
 		Animation* idle_anim;
 		Animation* jump_anim;
 		Animation* idle_to_walk_anim;
-		
+		Animation* death_anim;
+
 		Player( void );
 		Player( Vec2d pos );
 		
@@ -57,6 +61,7 @@ Player::Player( void )
 	idle_anim = NULL;
 	jump_anim = NULL;
 	idle_to_walk_anim = NULL;
+	death_anim = NULL;
 	active_anim = NULL;
 
 	sheet = NULL;
@@ -76,7 +81,7 @@ Player::Player( Vec2d pos )
 	set_position( pos );
 	set_velocity( Vec2d( 0.f, 0.f ) );
 
-	maxhp = 3; hp = maxhp;
+	maxhp = 1; hp = maxhp;
 	
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2) ), 0.2, 0.4  ) );
@@ -113,6 +118,12 @@ Player::Player( Vec2d pos )
 
 	idle_to_walk_anim->add_frame( Rect( Vec2d( 0.f, 0.75f ), 0.25f, 0.25f ) );
 
+	//LOAD DEATH ANIMATION //
+	death_anim = new Animation();
+
+	death_anim->add_frame( Rect( Vec2d( 0.75f, 0.75f), 0.25f, 0.25f) );
+	dead_box = Rect( Vec2d( -0.1f, -0.05f ), 0.2f, 0.05f );
+
 	active_anim = idle_anim;
 }
 
@@ -126,6 +137,7 @@ void Player::render( void )
 		case CONTROL_MODE_HIT:
 		case CONTROL_MODE_INVULN:
 		if( t%500 > 250 ) glColor3f( 0.5f, 0.5f, 0.5f );
+		case CONTROL_MODE_DEAD:
 		case CONTROL_MODE_FREE:
 		active_anim->render( sheet, renderbox, !facing_right );
 		break;
@@ -208,6 +220,9 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		if( t > last_hit + hit_delay ) control_mode = CONTROL_MODE_FREE;
 
 		case CONTROL_MODE_FREE:
+
+		if( hp <= 0 ) control_mode = CONTROL_MODE_DEAD;
+
 		if( keys_down[KEY_UP] )
 		{
 			if( grounded ) set_velocity( Vec2d( get_velocity().get_a(),  0.2f ) );
@@ -244,7 +259,21 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		break;
 
 		case CONTROL_MODE_HIT:
+		if( hp <= 0 ) control_mode = CONTROL_MODE_DEAD;
 		if( grounded ) control_mode = CONTROL_MODE_INVULN;
+		break;
+
+		case CONTROL_MODE_DEAD:
+		if( get_velocity().get_a() > 0.01 ) dx -= 0.01;
+		else if( get_velocity().get_a() < -0.01 ) dx += 0.01;
+		else set_velocity( Vec2d( 0, get_velocity().get_b() ) );
+
+		if( active_anim != death_anim )
+		{
+			active_anim = death_anim;
+			hitbox.clear();
+			hitbox.push_back( dead_box.add( this->position ) );
+		}
 		break;
 	}
 	if( !grounded ) dy -= 0.01f;
@@ -258,7 +287,7 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 	if( get_velocity().get_a() > 0.f ) facing_right = true;
 	else if( get_velocity().get_a() < 0.f ) facing_right = false;
 		
-	if( (t - frame_tick) > (1000 / 8) )
+	if( (t - frame_tick) > (1000 / 8) && active_anim != death_anim )
 	{
 		active_anim->increment();
 		frame_tick = t;
@@ -277,7 +306,7 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		
 		if( !anim_transition )
 		{
-			if( grounded )
+			if( grounded && active_anim )
 			{
 				if( get_velocity().get_a() == 0 
 					&& active_anim != idle_anim )

@@ -156,8 +156,8 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	//Walk
 	else
 	{
-		if( !walk_right && get_velocity().get_a() > -0.05 ) dx -= 0.01;
-		else if( walk_right && get_velocity().get_a() < 0.05 ) dx += 0.01;
+		if( !walk_right && get_velocity().get_a() > -0.02 ) dx -= 0.01;
+		else if( walk_right && get_velocity().get_a() < 0.02 ) dx += 0.01;
 	}
 
 	set_velocity( get_velocity().add( Vec2d( dx, dy ) ) );

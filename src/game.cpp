@@ -26,7 +26,7 @@ class Game
 
 Game::Game( void )
 {
-	debug = false;
+	debug = true;
 
 	finished = false;
 	window = NULL;

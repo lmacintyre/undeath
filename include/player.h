@@ -11,11 +11,12 @@
 
 using std::vector;
 
-enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN };
+enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN, CONTROL_MODE_DEAD };
 
 class Player: public Actor
 {
 	bool anim_transition = false;
+	bool dead = false;
 
 	long hit_delay;
 	long last_hit;
@@ -23,6 +24,8 @@ class Player: public Actor
 	CONTROL_MODE control_mode = CONTROL_MODE_FREE;
 
 	int jumpjuice = 0;
+
+	Rect dead_box;
 
 	public:
 		bool* keys_down;
@@ -33,6 +36,7 @@ class Player: public Actor
 		Animation* idle_anim;
 		Animation* jump_anim;
 		Animation* idle_to_walk_anim;
+		Animation* death_anim;
 
 		Player( void );
 		Player( Vec2d pos );
