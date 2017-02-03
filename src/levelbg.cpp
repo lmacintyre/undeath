@@ -44,19 +44,25 @@ LevelBG::LevelBG( Texture* sky_texture, Texture* ground_texture, Texture* level_
 	this->level_texture = level_texture;
 
 	this->sky_clip = Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f);
-	this->ground_clip = Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f );
+	this->ground_clip = Rect( Vec2d( 0.f, 0.f ), 0.5f, 0.25f );
 
 	vector<Rect> level_clip0;
-	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
-	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
-	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 0.25f ) );
+	level_clip0.push_back( Rect( Vec2d( 0.5f, 0.f ), 0.5f, 0.25f ) );
+	level_clip0.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 0.25f ) );
 	level_tiles.push_back( level_clip0 );
+	
 	vector<Rect> level_clip1;
-	level_clip1.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
-	level_clip1.push_back( Rect( Vec2d( 0.5f, 0.f ), 0.5f, 1.f ) );
-	level_clip1.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 1.f ) );
+	level_clip1.push_back( Rect( Vec2d( 0.5f, 0.25f ), 0.5f, 0.25f ) );
+	level_clip1.push_back( Rect( Vec2d( 0.f, 0.f ), 0.5f, 0.25f ) );
+	level_clip1.push_back( Rect( Vec2d( 0.5f, 0.25f ), 0.5f, 0.25f ) );
 	level_tiles.push_back( level_clip1 );
-	level_tiles.push_back( level_clip0 );
+
+	vector<Rect> level_clip2;
+	level_clip2.push_back( Rect( Vec2d( 0.5f, 0.5f ), 0.5f, 0.25f ) );
+	level_clip2.push_back( Rect( Vec2d( 1.f, 0.5f ), -0.5f, 0.25f ) );
+	level_clip2.push_back( Rect( Vec2d( 0.75f, 0.f ), 0.5f, 0.25f ) );
+	level_tiles.push_back( level_clip2 );
 }
 
 void LevelBG::render( Rect where, Vec2d scroll )
@@ -123,7 +129,7 @@ void LevelBG::render( Rect where, Vec2d scroll )
 		//Then repeat for screen width / total tiles width + 1
 
 		x_start = (where.w/2)*-1 - fmod(scroll.get_a(), tile_size) - tile_size;
-		y_start = scroll.get_b() * -1 - tile_size;
+		y_start = scroll.get_b()*-1 - tile_size*2;
 
 		half_height = where.h/2;
 

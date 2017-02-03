@@ -69,6 +69,8 @@ class MyGame: public Game
 		//Temporary! Put this into some kind of level object!
 		LevelBG background;
 		
+		Texture* hp_tex = NULL;
+
 	public:
 		MyGame( void ) {};
 		
@@ -185,6 +187,11 @@ void MyGame::load_textures()
 	wall_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
 	for( int i=0; i<walls.size(); i++ ) walls[i].sheet = wall_sheet;
 
+	if( debug ) printf( "LOAD HP\n" );
+	load_surface = IMG_Load( "res/skele_head.png" ); 
+	hp_tex = new Texture();
+	hp_tex->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+
 	//TODO -- Again, level object
 	//background.ground_texture = wall_sheet;
 	background.level_texture = wall_sheet;
@@ -243,22 +250,22 @@ void MyGame::render_hud( Player* p )
 	//render health blocks
 	glPushMatrix();
 	glLoadIdentity();
+
+	Rect clip( Vec2d( 0.f, 0.f), 1.f, 1.f );
+
 	for( int i=0; i<p->maxhp; i++ )
 	{
 		if( i < p->hp ) glColor3f( 0.f, 1.f, 0.f );
 		else glColor3f( 1.f, 0.f, 0.f );
 	
-		float start_x = display.vertices[0].get_a(), start_y = display.vertices[0].get_b();
+		float start_x = display.vertices[0].get_a(), start_y = display.vertices[0].get_b()*-1;
 		float hp_size = display.w / 15;
-		float margin =  display.w / 15;
-		float spacing = hp_size / 3;
-		
-		glBegin( GL_QUADS );
-			glVertex2f( start_x + margin + spacing*i + hp_size*i    , start_y - margin           );
-			glVertex2f( start_x + margin + spacing*i + hp_size*(i+1), start_y - margin           );
-			glVertex2f( start_x + margin + spacing*i + hp_size*(i+1), start_y - margin - hp_size );
-			glVertex2f( start_x + margin + spacing*i + hp_size*i    , start_y - margin - hp_size );
-		glEnd();
+		float margin =  display.w / 20;
+		float spacing = 0.f;
+
+		Rect where( Vec2d( start_x + margin + (i*spacing) + (i*hp_size), start_y - hp_size - margin ), hp_size, hp_size );
+
+		hp_tex->render( clip, where );
 	}
 	glPopMatrix();
 }
