@@ -8,10 +8,11 @@ enum BLOCK_TYPE { BLOCK_TYPE_PLATFORM_LARGE, BLOCK_TYPE_PLATFORM_MEDIUM, BLOCK_T
 class Block
 {
 	Rect renderbox, clip;
-	bool render_hitbox;
 
 	public:
 		int type;
+
+		bool render_hitbox;
 	
 		Texture* sheet;
 	
@@ -94,6 +95,8 @@ CollisionResult Block::collision( Rect entity )
 
 void Block::render( void )
 {
+
+	glColor3f( 1.f, 1.f, 1.f );
 	sheet->render( clip, renderbox );
 
 	if( render_hitbox )

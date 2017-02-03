@@ -291,6 +291,7 @@ void MyGame::poll_input( bool* keys )
 				case SDLK_h:
 				for( int i=0; i<players.size(); i++ ) players[i]->render_hitbox = !players[i]->render_hitbox;
 				for( int i=0; i<enemies.size(); i++ ) enemies[i]->render_hitbox = !enemies[i]->render_hitbox;
+				for( int i=0; i<ground_set.size(); i++ ) ground_set[i].render_hitbox = !ground_set[i].render_hitbox;
 				break;
 				
 				case SDLK_UP:

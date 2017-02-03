@@ -10,10 +10,11 @@ enum BLOCK_TYPE { BLOCK_TYPE_PLATFORM_LARGE, BLOCK_TYPE_PLATFORM_MEDIUM, BLOCK_T
 class Block
 {
 	Rect renderbox, clip;
-	bool render_hitbox;
 
 	public:
 		int type;
+
+		bool render_hitbox;
 
 		Texture* sheet;
 
