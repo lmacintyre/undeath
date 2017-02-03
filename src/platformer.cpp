@@ -131,14 +131,37 @@ bool MyGame::init( void )
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 1.f ) ) );
 
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 0.f, -0.5f ), 1 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( -1.f, 0.f ), 2 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 1.f, 0.f ), 3 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, 0.5f ), 0 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 0.f, 1.f ), 0 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, -1.f ), 0 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 2.f, 0.f ), 1 ) );
-	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( -2.f, 0.f ), 1 ) );
+	vector<directive> bounds;
+
+	//Bottom middle
+	bounds.push_back( DIRECTIVE_WALK_RIGHT );bounds.push_back( DIRECTIVE_WALK_LEFT );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 0.f, -0.5f ), 1, bounds ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, -1.f ), 0, bounds ) );
+
+	//Left
+	bounds.clear();
+	bounds.push_back( DIRECTIVE_NONE ); bounds.push_back( DIRECTIVE_JUMP );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( -1.f, 0.f ), 2, bounds ) );
+
+	bounds.clear();
+	bounds.push_back( DIRECTIVE_WALK_RIGHT ); bounds.push_back( DIRECTIVE_NONE );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( -2.f, 0.f ), 1, bounds ) );
+
+	//Right
+	bounds.clear();
+	bounds.push_back( DIRECTIVE_JUMP ); bounds.push_back( DIRECTIVE_NONE );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 1.f, 0.f ), 3, bounds ) );
+
+	bounds.clear();
+	bounds.push_back( DIRECTIVE_NONE ); bounds.push_back( DIRECTIVE_WALK_LEFT );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 2.f, 0.f ), 1, bounds ) );
+
+	//Top middle
+	bounds.clear();
+	bounds.push_back( DIRECTIVE_NONE );bounds.push_back( DIRECTIVE_NONE );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, 0.5f ), 0, bounds ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 0.f, 1.f ), 0, bounds ) );
+
 /*
 	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( -1.f, -2.f ), 0 ) );
 	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( 0.f, -2.f ), 0 ) );

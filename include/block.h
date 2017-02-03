@@ -4,6 +4,10 @@
 #include "geo2d.h"
 #include "col2d.h"
 #include "texture.h"
+#include "ctrlzone.h"
+
+#include <vector>
+using std::vector;
 
 enum BLOCK_TYPE { BLOCK_TYPE_PLATFORM_LARGE, BLOCK_TYPE_PLATFORM_MEDIUM, BLOCK_TYPE_PLATFORM_SMALL, BLOCK_TYPE_WALL };
 
@@ -19,9 +23,10 @@ class Block
 		Texture* sheet;
 
 		Rect hitbox;
+		vector<ControlZone> zones;
 
 		Block( void );
-		Block( int type, Vec2d pos, int sprite_id );
+		Block( int type, Vec2d pos, int sprite_id, vector<directive> bounds );
 		CollisionResult collision( Rect r );
 		void render( void );
 };

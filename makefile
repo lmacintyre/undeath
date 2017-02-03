@@ -1,6 +1,6 @@
 CC 	= g++
 ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o
-GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o
+GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o
 LINKS = -lSDL2 -lSDL2_image -lGL
 FLAGS	= -I include
 
@@ -29,7 +29,7 @@ bin/game.o: src/game.cpp include/game.h include/display.h include/geo2d.h
 
 
 
-bin/platformer.o: src/platformer.cpp include/display.h include/game.h include/texture.h include/animation.h include/vec2d.h include/col2d.h include/geo2d.h include/event.h include/block.h include/player.h include/enemy.h include/levelbg.h
+bin/platformer.o: src/platformer.cpp include/display.h include/game.h include/texture.h include/animation.h include/vec2d.h include/col2d.h include/geo2d.h include/event.h include/block.h include/player.h include/enemy.h include/levelbg.h include/ctrlzone.h
 	$(CC) -c -o bin/platformer.o src/platformer.cpp $(LINKS) $(FLAGS)
 
 bin/animation.o: src/animation.cpp include/animation.h include/texture.h include/geo2d.h
@@ -44,8 +44,11 @@ bin/player.o: src/player.cpp include/player.h include/vec2d.h include/geo2d.h in
 bin/enemy.o: src/enemy.cpp include/enemy.h include/vec2d.h include/event.h include/block.h include/actor.h
 	$(CC) -c -o bin/enemy.o src/enemy.cpp $(LINKS) $(FLAGS)
 
-bin/block.o: src/block.cpp include/block.h include/geo2d.h include/col2d.h include/texture.h
+bin/block.o: src/block.cpp include/block.h include/geo2d.h include/col2d.h include/texture.h include/ctrlzone.h
 	$(CC) -c -o bin/block.o src/block.cpp $(LINKS) $(FLAGS)
 
 bin/levelbg.o: src/levelbg.cpp include/levelbg.h include/display.h include/vec2d.h include/geo2d.h include/texture.h
 	$(CC) -c -o bin/levelbg.o src/levelbg.cpp $(LINKS) $(FLAGS)
+
+bin/ctrlzone.o: src/ctrlzone.cpp include/ctrlzone.h include/geo2d.h
+	$(CC) -c -o bin/ctrlzone.o src/ctrlzone.cpp $(LINKS) $(FLAGS)

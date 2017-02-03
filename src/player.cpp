@@ -81,7 +81,7 @@ Player::Player( Vec2d pos )
 	set_position( pos );
 	set_velocity( Vec2d( 0.f, 0.f ) );
 
-	maxhp = 1; hp = maxhp;
+	maxhp = 3; hp = maxhp;
 	
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2) ), 0.2, 0.4  ) );

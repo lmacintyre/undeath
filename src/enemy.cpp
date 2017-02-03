@@ -112,9 +112,10 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	float dx = 0.f, dy = 0.f;
 	grounded = false;
 
-	// Check for collision with each element of the ground set
+	// For each element of the ground set
 	for( int i=0; i<ground_set.size(); i++ )
 	{
+		//Check for collision with the ground
 		CollisionResult CR = ground_set[i].collision( hitbox[0] );
 		if( CR.result )
 		{
@@ -149,6 +150,29 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 				break;
 			}
 		}
+
+		//Check for collision with the control zones
+		for( int j=0; j<ground_set[i].zones.size(); j++ )
+		{
+			CR = collision_test( hitbox[0], ground_set[i].zones[j].zone );
+			if( CR.result )
+			{
+				switch( ground_set[i].zones[j].command )
+				{
+					case DIRECTIVE_WALK_LEFT:
+					if( walk_right ) walk_right = false;
+					break;
+
+					case DIRECTIVE_WALK_RIGHT:
+					if( !walk_right ) walk_right = true;
+					break;
+
+					case DIRECTIVE_JUMP:
+					if( grounded ) set_velocity( Vec2d( get_velocity().get_a(),  0.3f ) );
+					break;
+				}
+			}
+		}
 	}
 
 	//Gravity
@@ -156,8 +180,8 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	//Walk
 	else
 	{
-		if( !walk_right && get_velocity().get_a() > -0.02 ) dx -= 0.01;
-		else if( walk_right && get_velocity().get_a() < 0.02 ) dx += 0.01;
+		if( !walk_right && get_velocity().get_a() > -0.03 ) dx -= 0.01;
+		else if( walk_right && get_velocity().get_a() < 0.03 ) dx += 0.01;
 	}
 
 	set_velocity( get_velocity().add( Vec2d( dx, dy ) ) );
