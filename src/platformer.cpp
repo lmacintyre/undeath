@@ -64,6 +64,8 @@ class MyGame: public Game
 		SDL_Surface* load_surface;
 		SDL_Surface* blit_surface;
 
+		TTF_Font* font;
+
 		Uint32 last_tick;
 		long delta_t;
 		
@@ -180,6 +182,7 @@ bool MyGame::init( void )
 	if( debug ) printf( "load textures...\n" );
 	load_textures();	
 	if( debug ) printf( "successful.\n" );
+	font = TTF_Open( "res/Xanadu.ttf", 16 );
 
 	//Build ground set
 	ground_set.insert( ground_set.begin(), platforms.begin(), platforms.end() );
@@ -278,6 +281,8 @@ void MyGame::render_hud( Player* p )
 	//render health blocks
 	glPushMatrix();
 	glLoadIdentity();
+
+	TTF_RenderTextSolid(  );
 
 	Rect clip( Vec2d( 0.f, 0.f), 1.f, 1.f );
 

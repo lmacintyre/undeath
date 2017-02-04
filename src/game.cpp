@@ -38,6 +38,12 @@ bool Game::initSDL( char* title )
 {
 	SDL_Init( SDL_INIT_VIDEO );
 
+	if( TTF_Init() == -1 )
+	{
+		printf( "TTF encountered an error and could not initialize:\n%s", TTF_GetError() );
+		return false;
+	}
+
 	SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
 	SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -78,5 +84,6 @@ bool Game::initGL( void )
 void Game::quit( void )
 {
 	SDL_DestroyWindow( window );
+	TTF_Quit();
 	SDL_Quit();
 }
