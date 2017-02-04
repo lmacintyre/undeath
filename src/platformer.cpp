@@ -20,6 +20,7 @@
 //
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
+#include "SDL2/SDL_ttf.h"
 #include "SDL2/SDL_opengl.h"
 
 //// including opengl headers
@@ -129,8 +130,9 @@ bool MyGame::init( void )
 	if( debug ) printf( "successful.\n" );
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
-	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 1.f ) ) );
 
+	enemies.push_back( new EnemySkeleton( Vec2d( 0.5f, 3.f ) ) );
+	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 3.f ) ) );
 	vector<directive> bounds;
 
 	//Bottom middle
@@ -195,8 +197,10 @@ void MyGame::load_textures()
 	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
 	
 	if( debug ) printf( "LOAD ENEMY\n" );
-	enemies[0]->sheet = new Texture();
-	enemies[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
+	Texture* enemy_skel_tex = new Texture;
+	enemy_skel_tex = new Texture();
+	enemy_skel_tex->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
+	for( int i=0; i<enemies.size(); i++) enemies[i]->sheet = enemy_skel_tex;
 
 	if( debug ) printf( "LOAD PLATFORM\n" );
 	Texture* plat_sheet = new Texture();
@@ -253,10 +257,11 @@ void MyGame::render( void )
 	for( int i=0; i<ground_set.size(); i++ ) ground_set [i].render();
 
 	//Render enemies
-	glColor3f( 0.8f, 0.2f, 0.2f );
-
 	for( int i=0; i<enemies.size(); i++ )
+	{
+		glColor3f( 0.8f, 0.2f, 0.2f );
 		enemies[i]->render();
+	}
 
 	glPushMatrix();
 	glLoadIdentity();

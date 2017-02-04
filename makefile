@@ -1,7 +1,7 @@
 CC 	= g++
 ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o
 GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o
-LINKS = -lSDL2 -lSDL2_image -lGL
+LINKS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
 FLAGS	= -I include
 
 all: $(ENG) $(GAME)

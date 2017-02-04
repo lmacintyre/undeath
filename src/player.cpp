@@ -209,6 +209,8 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 
 				control_mode = CONTROL_MODE_HIT;
 				last_hit = t;
+
+				break;
 			}
 		}
 
