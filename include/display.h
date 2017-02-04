@@ -2,4 +2,3 @@
 #define WINDOW_HEIGHT 600
 
 #define FRAMERATE 60
-

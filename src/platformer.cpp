@@ -31,6 +31,7 @@
 //
 #include "game.h"
 #include "texture.h"
+#include "textsurface.h"
 #include "animation.h"
 #include "vec2d.h"
 #include "col2d.h"
@@ -71,7 +72,7 @@ class MyGame: public Game
 		
 		//Temporary! Put this into some kind of level object!
 		LevelBG background;
-		
+
 		Texture* hp_tex = NULL;
 
 	public:
@@ -182,7 +183,10 @@ bool MyGame::init( void )
 	if( debug ) printf( "load textures...\n" );
 	load_textures();	
 	if( debug ) printf( "successful.\n" );
-	font = TTF_Open( "res/Xanadu.ttf", 16 );
+
+	if( debug) printf( "Load font..." );
+	font = TTF_OpenFont( "res/Xanadu.ttf", 34 );
+	printf( "Successful\n" );
 
 	//Build ground set
 	ground_set.insert( ground_set.begin(), platforms.begin(), platforms.end() );
@@ -282,8 +286,6 @@ void MyGame::render_hud( Player* p )
 	glPushMatrix();
 	glLoadIdentity();
 
-	TTF_RenderTextSolid(  );
-
 	Rect clip( Vec2d( 0.f, 0.f), 1.f, 1.f );
 
 	for( int i=0; i<p->maxhp; i++ )
@@ -300,6 +302,7 @@ void MyGame::render_hud( Player* p )
 
 		hp_tex->render( clip, where );
 	}
+
 	glPopMatrix();
 }
 

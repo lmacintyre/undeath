@@ -1,5 +1,5 @@
 CC 	= g++
-ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o
+ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o bin/textsurface.o
 GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o
 LINKS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
 FLAGS	= -I include
@@ -26,6 +26,9 @@ bin/texture.o: src/texture.cpp include/texture.h include/geo2d.h
 
 bin/game.o: src/game.cpp include/game.h include/display.h include/geo2d.h
 	$(CC) -c -o bin/game.o src/game.cpp $(LINKS) $(FLAGS)
+
+bin/textsurface.o: src/textsurface.cpp include/vec2d.h include/geo2d.h include/texture.h
+	$(CC) -c -o bin/textsurface.o src/textsurface.cpp $(LINKS) $(FLAGS)
 
 
 
