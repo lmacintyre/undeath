@@ -58,3 +58,8 @@ void TextSurface::render( Vec2d where )
 
 	text_image->render( Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f ), Rect( where, width, height ) );
 }
+
+void TextSurface::render( Rect where )
+{
+	text_image->render( Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f ), where );
+}

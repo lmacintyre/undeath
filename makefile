@@ -1,6 +1,7 @@
 CC 	= g++
-ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o bin/textsurface.o
+ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o bin/textsurface.o bin/menu.o
 GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o
+EXEC = exec/*
 LINKS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
 FLAGS	= -I include
 
@@ -10,6 +11,11 @@ all: $(ENG) $(GAME)
 engine: $(ENG)
 	$(CC) -c $(ENG) $(LINKS) $(FLAGS)
 
+clean-all:
+	rm edit $(ENG) $(GAME)
+
+clean-exec:
+	rm edit $(EXEC)
 
 
 bin/vec2d.o: src/vec2d.cpp include/vec2d.h
@@ -27,8 +33,12 @@ bin/texture.o: src/texture.cpp include/texture.h include/geo2d.h
 bin/game.o: src/game.cpp include/game.h include/display.h include/geo2d.h
 	$(CC) -c -o bin/game.o src/game.cpp $(LINKS) $(FLAGS)
 
-bin/textsurface.o: src/textsurface.cpp include/vec2d.h include/geo2d.h include/texture.h
+bin/textsurface.o: src/textsurface.cpp include/textsurface.h include/vec2d.h include/geo2d.h include/texture.h
 	$(CC) -c -o bin/textsurface.o src/textsurface.cpp $(LINKS) $(FLAGS)
+
+bin/menu.o: src/menu.cpp include/menu.h include/vec2d.h include/geo2d.h include/texture.h include/textsurface.h
+	$(CC) -c -o bin/menu.o src/menu.cpp $(LINKS) $(FLAGS)
+
 
 
 

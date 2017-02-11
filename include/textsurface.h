@@ -1,4 +1,3 @@
-
 #ifndef __TEXTSURFACE_H__
 #define __TEXTSURFACE_H__
 
