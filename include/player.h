@@ -39,6 +39,7 @@ class Player: public Actor
 		Animation* death_anim;
 
 		Player( void );
+		~Player( void );
 		Player( Vec2d pos );
 		
 		void render( void );

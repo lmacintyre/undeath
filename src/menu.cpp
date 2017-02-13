@@ -1,4 +1,5 @@
 #include "SDL2/SDL_ttf.h"
+
 #include "vec2d.h"
 #include "geo2d.h"
 #include "textsurface.h"
@@ -9,30 +10,35 @@ class MenuItem
 {
 	private:
 		char* text;
-		TextSurface texture;
-		
-		//void (*action)( void );
+		TextSurface* texture;
 		
 	public:
 		bool selected = false;
 		
 		MenuItem( void );
-		MenuItem( char* text, TTF_Font* font/*, void(*action)( void )*/ );
-		
-		void render( Vec2d where ) { texture.render( where ); }
-		void render( Rect where ) { texture.render( where ); }
+		~MenuItem( void );
+		MenuItem( char* text, TTF_Font* font, void(*action)( void ) );
+
+		void render( Vec2d where ) { texture->render( where ); }
+		void render( Rect where ) { texture->render( where ); }
+
+		void (*action)( void );
 };
 
 MenuItem::MenuItem( void )
 {
-	text = NULL;
+	delete( texture );
+	texture = NULL;
 }
 
-MenuItem::MenuItem( char* text, TTF_Font* font/*, void(*action)( void )*/ )
+MenuItem::~MenuItem( void ) {}
+
+
+MenuItem::MenuItem( char* text, TTF_Font* font, void(*action)( void ) )
 {
 	this->text = text;
-	this->texture = TextSurface( text, font );
-	//this->action = action;
+	this->texture = new TextSurface();
+	this->action = action;
 }
 
 class Menu
@@ -43,15 +49,23 @@ class Menu
 		TTF_Font* font;
 		
 	public:
-		Menu( void ) {}
+		Menu( void );
+		~Menu( void );
 		Menu( vector<MenuItem> items );
 		
 		void set_font( TTF_Font* font );
 		void add_item( MenuItem item );
-		void add_item( char* text/*, void(*menu_action)( void )*/ );
+		void add_item( char* text, void(*menu_action)( void ) );
 		
 		void render( Vec2d where );
 };
+
+Menu::Menu( void )
+{
+	font = NULL;
+}
+
+Menu::~Menu( void ) {}
 
 Menu::Menu( vector<MenuItem> items )
 {
@@ -69,10 +83,10 @@ void Menu::add_item( MenuItem item )
 	items.push_back( item );
 }
 
-void Menu::add_item( char* text/*, void(*action)( void )*/ 
+void Menu::add_item( char* text, void(*action)( void ) 
 )
 {
-	items.push_back( MenuItem( text, font/*,  action*/ ) );
+	items.push_back( MenuItem( text, font,  action ) );
 }
 
 void Menu::render( Vec2d where )

@@ -5,22 +5,25 @@
 #include "geo2d.h"
 #include "textsurface.h"
 
+enum MENU_CHOICE { MENU_EXIT, MENU_RETURN };
+
 class MenuItem
 {
 	private:
 		char* text;
-		TextSurface texture;
-
-		void (*action)( void );
+		TextSurface* texture;
 
 	public:
 		bool selected = false;
 
 		MenuItem( void );
+		~MenuItem( void );
 		MenuItem( char* text, TTF_Font* font, void(*action)( void ) );
 
 		void render( Vec2d where );
 		void render( Rect where );
+
+		void (*action)( void );
 };
 
 class Menu
@@ -32,6 +35,7 @@ class Menu
 		
 	public:
 		Menu( void );
+		~Menu( void );
 		Menu( vector<MenuItem> items );
 		
 		void set_font( TTF_Font* font );

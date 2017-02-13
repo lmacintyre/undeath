@@ -47,6 +47,7 @@ class Player: public Actor
 		Animation* death_anim;
 
 		Player( void );
+		~Player( void );
 		Player( Vec2d pos );
 		
 		void render( void );
@@ -65,6 +66,19 @@ Player::Player( void )
 	active_anim = NULL;
 
 	sheet = NULL;
+}
+
+Player::~Player( void )
+{
+	if( walk_anim != NULL ) delete walk_anim;
+	if( idle_anim != NULL ) delete idle_anim;
+	if( jump_anim != NULL ) delete jump_anim;
+	if( idle_to_walk_anim != NULL ) delete idle_to_walk_anim;
+	if( death_anim != NULL ) delete death_anim;
+
+	if( sheet != NULL ) delete sheet;
+
+	if( keys_down != NULL ) delete keys_down;
 }
 
 Player::Player( Vec2d pos )

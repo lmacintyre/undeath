@@ -15,6 +15,7 @@ class TextSurface
 	
 	public:
 		TextSurface( void );
+		~TextSurface( void );
 		TextSurface( char* data, TTF_Font* font );
 
 		void render( Vec2d where );

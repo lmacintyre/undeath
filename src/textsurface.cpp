@@ -15,11 +15,10 @@ class TextSurface
 		TTF_Font* font;
 		Texture* text_image;
 		char* data;
-
-		Rect scope;
-	
+		
 	public:
 		TextSurface( void );
+		~TextSurface( void );
 		TextSurface( char* data, TTF_Font* font );
 
 		void render( Vec2d where );
@@ -35,12 +34,16 @@ TextSurface::TextSurface( void )
 	data = NULL;
 }
 
+TextSurface::~TextSurface( void )
+{
+
+}
+
 TextSurface::TextSurface( char* data, TTF_Font* font )
 {
 
 	this->data = data;
 	this->font = font;
-	this->scope = scope;
 
 	SDL_Color color = { 0, 0, 0 };
 	load_surface = TTF_RenderText_Blended( font, data, color );

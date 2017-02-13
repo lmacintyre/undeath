@@ -11,6 +11,7 @@ class Rect
 		float w, h;
 
 		Rect( void );
+		~Rect( void );
 		Rect( Vec2d p, float w, float h );
 		Rect( vector<Vec2d> vertices );
 		
@@ -27,6 +28,8 @@ Rect::Rect( void )
 {
 	w = 0; h = 0;
 }
+
+Rect::~Rect( void ) {}
 
 Rect::Rect( Vec2d p, float w, float h )
 {

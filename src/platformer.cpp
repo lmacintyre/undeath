@@ -8,7 +8,10 @@
 // Todo:
 //
 /// Menu
-/// Text
+/// Improve text rendering?
+///		-text boxes
+///		-loop w/ delay (costly)
+//
 /// Health images
 //
 /// More enemy interaction
@@ -36,6 +39,7 @@
 #include "vec2d.h"
 #include "col2d.h"
 #include "geo2d.h"
+#include "menu.h"
 
 #include "display.h"
 #include "event.h"
@@ -54,7 +58,6 @@ using std::vector;
 class MyGame: public Game
 {
 	private:
-
 		vector<Actor*> players;
 		vector<Actor*> enemies;
 		
@@ -73,8 +76,11 @@ class MyGame: public Game
 		//Temporary! Put this into some kind of level object!
 		LevelBG background;
 
+		//And this into some kind of HUD wrapper?
 		Texture* hp_tex = NULL;
 
+		Menu main_menu;
+		
 	public:
 		MyGame( void ) {};
 		
@@ -91,6 +97,8 @@ class MyGame: public Game
 
 		void poll_input( bool* keys );
 		void logic( long d );
+
+		void quit( void );
 };
 
 bool MyGame::initGL( void )
@@ -124,6 +132,11 @@ bool MyGame::initGL( void )
 	return true;
 }
 
+void action( void )
+{
+	printf("ACTION!\n");
+}
+
 bool MyGame::init( void )
 {
 	if( debug ) printf( "Init SDL..." );
@@ -131,6 +144,15 @@ bool MyGame::init( void )
 	if( debug ) printf( "successful.\nInit opengl..." );
 	if( !initGL() ) return false;
 	if( debug ) printf( "successful.\n" );
+
+
+	if( debug) printf( "Load font..." );
+	font = TTF_OpenFont( "res/Xanadu.ttf", 34 );
+	printf( "Successful\n" );
+
+	main_menu.set_font( font );
+	//main_menu.add_item( MenuItem( "test", font, *action ) );
+	MenuItem mi = MenuItem( "test", font, *action );
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 
@@ -184,10 +206,6 @@ bool MyGame::init( void )
 	load_textures();	
 	if( debug ) printf( "successful.\n" );
 
-	if( debug) printf( "Load font..." );
-	font = TTF_OpenFont( "res/Xanadu.ttf", 34 );
-	printf( "Successful\n" );
-
 	//Build ground set
 	ground_set.insert( ground_set.begin(), platforms.begin(), platforms.end() );
 	ground_set.insert( ground_set.end(), walls.begin(), walls.end() );
@@ -202,7 +220,7 @@ void MyGame::load_textures()
 	load_surface = IMG_Load( "res/skele_sheet.png" ); 
 	players[0]->sheet = new Texture();
 	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
-	
+
 	if( debug ) printf( "LOAD ENEMY\n" );
 	Texture* enemy_skel_tex = new Texture;
 	enemy_skel_tex = new Texture();
@@ -214,7 +232,7 @@ void MyGame::load_textures()
 	load_surface = IMG_Load( "res/plat_sheet.png" );
 	plat_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
 	for( int i=0; i<platforms.size(); i++ ) platforms[i].sheet = plat_sheet;
-	
+
 	if( debug ) printf( "LOAD WALL\n" );
 	Texture* wall_sheet = new Texture();
 	load_surface = IMG_Load( "res/wall_sheet.png" );
@@ -225,6 +243,7 @@ void MyGame::load_textures()
 	load_surface = IMG_Load( "res/skele_head.png" ); 
 	hp_tex = new Texture();
 	hp_tex->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+	SDL_FreeSurface( load_surface );
 
 	//TODO -- Again, level object
 	//background.ground_texture = wall_sheet;
@@ -389,6 +408,14 @@ void MyGame::logic( long d )
 		enemies[i]->update( ground_set, players, dt );
 }
 
+void MyGame::quit( void )
+{
+	Game::quit();
+
+	for( int i=0; i<players.size(); i++ ) delete players[i];
+	for( int i=0; i<enemies.size(); i++ ) delete enemies[i];
+}
+
 int main( int argc, char* argv[] )
 {
 	MyGame game;
@@ -397,5 +424,5 @@ int main( int argc, char* argv[] )
 	{
 		if( game.debug ) printf("Initialization successful. Starting game loop.\n");
 		game.start_loop();
-	}
+	} else printf( "init failed...?\n" );
 }
