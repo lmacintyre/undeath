@@ -55,6 +55,8 @@
 
 using std::vector;
 
+typedef void (MyGame::*GameFunction)( void );
+
 class MyGame: public Game
 {
 	private:
@@ -92,12 +94,15 @@ class MyGame: public Game
 		
 		void start_loop( void );
 
+		void menu_action( void );
+
 		void render( void );
 		void render_hud( Player* p );
 
 		void poll_input( bool* keys );
 		void logic( long d );
 
+		void soft_quit( void );
 		void quit( void );
 };
 
@@ -132,13 +137,10 @@ bool MyGame::initGL( void )
 	return true;
 }
 
-void action( void )
-{
-	printf("ACTION!\n");
-}
-
 bool MyGame::init( void )
 {
+	mode = GAME_MODE_LOAD;
+
 	if( debug ) printf( "Init SDL..." );
 	if( !initSDL() ) return false;
 	if( debug ) printf( "successful.\nInit opengl..." );
@@ -147,12 +149,13 @@ bool MyGame::init( void )
 
 
 	if( debug) printf( "Load font..." );
-	font = TTF_OpenFont( "res/Xanadu.ttf", 34 );
+	font = TTF_OpenFont( "res/Xanadu.ttf", 50 );
 	printf( "Successful\n" );
 
 	main_menu.set_font( font );
-	//main_menu.add_item( MenuItem( "test", font, *action ) );
-	MenuItem mi = MenuItem( "test", font, *action );
+	main_menu.add_item( MenuItem( "toggle fullscreen", font, &MyGame::toggle_fullscreen ) );
+	main_menu.add_item( MenuItem( "main menu", font, &MyGame::soft_quit ) );
+	main_menu.add_item( MenuItem( "exit", font, &MyGame::soft_quit ) );
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 
@@ -189,16 +192,6 @@ bool MyGame::init( void )
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, 0.5f ), 0, bounds ) );
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 0.f, 1.f ), 0, bounds ) );
 
-/*
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( -1.f, -2.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( 0.f, -2.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( 1.f, -2.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( -2.f, -2.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d( -2.f, -1.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d(  2.f, -2.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d(  2.f, -1.f ), 0 ) );
-	walls.push_back( Block( BLOCK_TYPE_WALL, Vec2d(  2.f,  0.f ), 0 ) );
-*/
 	//TODO -- build level class
 	background = LevelBG( NULL, NULL, NULL );
 
@@ -255,17 +248,24 @@ void MyGame::load_textures()
 
 void MyGame::start_loop( void )
 {
+	mode = GAME_MODE_PLAY;
 	while( !finished )
 	{
 		poll_input( ((Player*) players[0])->keys_down );
 		
 		delta_t = SDL_GetTicks() - last_tick;
 		last_tick = SDL_GetTicks();
-			
-		logic( delta_t );				
+		
+		if( delta_t < 1000 ) logic( delta_t );
+
 		render();
 		SDL_GL_SwapWindow( window );
 	} quit();
+}
+
+void MyGame::menu_action( void )
+{
+	printf("Action!\n");
 }
 
 void MyGame::render( void )
@@ -274,6 +274,8 @@ void MyGame::render( void )
 	
 	glPushMatrix();
 	
+	if( mode == GAME_MODE_MENU ) glColor3f( 0.3f, 0.3f, 0.3f );
+
 	background.render( display, players[0]->get_position() );
 
 	glTranslatef( players[0]->get_position().get_a() * -1, players[0]->get_position().get_b() * -1, 0.f );
@@ -289,13 +291,19 @@ void MyGame::render( void )
 		enemies[i]->render();
 	}
 
-	glPushMatrix();
-	glLoadIdentity();
-	glColor3f( 1.f, 1.f, 1.f );
-	players[0]->render();
 	glPopMatrix();
+	glPushMatrix();
+
+	glColor3f( 1.f, 1.f, 1.f );
+	players[0]->render();	
 	glPopMatrix();
 	
+	if( mode == GAME_MODE_MENU )
+	{
+		glColor3f( 1.f, 1.f, 1.f );
+		main_menu.render( Vec2d( -1*display.w*0.5, display.h*0.5 ) );
+	}
+
 	render_hud( (Player*) players[0] );
 }
 
@@ -303,7 +311,6 @@ void MyGame::render_hud( Player* p )
 {
 	//render health blocks
 	glPushMatrix();
-	glLoadIdentity();
 
 	Rect clip( Vec2d( 0.f, 0.f), 1.f, 1.f );
 
@@ -340,7 +347,8 @@ void MyGame::poll_input( bool* keys )
 			switch( event.key.keysym.sym )
 			{
 				case SDLK_ESCAPE:
-				finished = true;
+				if( mode == GAME_MODE_PLAY ) mode = GAME_MODE_MENU;
+				else mode = GAME_MODE_PLAY;
 				break;
 
 				case SDLK_h:
@@ -349,7 +357,16 @@ void MyGame::poll_input( bool* keys )
 				for( int i=0; i<ground_set.size(); i++ ) ground_set[i].render_hitbox = !ground_set[i].render_hitbox;
 				break;
 				
+				case SDLK_f:
+				this->toggle_fullscreen();
+				break;
+
+				case SDLK_q:
+				soft_quit();
+				break;
+
 				case SDLK_UP:
+				if( mode == GAME_MODE_MENU ) main_menu.prev();
 				keys[KEY_UP] = true;
 				break;
 
@@ -358,6 +375,7 @@ void MyGame::poll_input( bool* keys )
 				break;
 
 				case SDLK_DOWN:
+				if( mode == GAME_MODE_MENU ) main_menu.next();
 				keys[KEY_DOWN] = true;
 				break;
 				
@@ -368,6 +386,12 @@ void MyGame::poll_input( bool* keys )
 				case SDLK_SPACE:
 				keys[KEY_SPACE] = true;
 				break;
+
+				case SDLK_RETURN:
+				if( mode == GAME_MODE_MENU ) main_menu.act( this );
+				keys[KEY_RETURN] = true;
+				break;
+
 			} break;
 
 			case SDL_KEYUP:
@@ -392,6 +416,10 @@ void MyGame::poll_input( bool* keys )
 				case SDLK_SPACE:
 				keys[KEY_SPACE] = false;
 				break;
+
+				case SDLK_RETURN:
+				keys[KEY_RETURN] = false;
+				break;
 			} break;
 		}
 	}
@@ -400,12 +428,35 @@ void MyGame::poll_input( bool* keys )
 void MyGame::logic( long d )
 {
 	float dt = (float) d / 100;
-	
-	for( int i=0; i<players.size(); i++ )
-		players[i]->update( ground_set, enemies, dt );
-	
-	for( int i=0; i<enemies.size(); i++ )
-		enemies[i]->update( ground_set, players, dt );
+
+	switch( mode )
+	{	
+		case GAME_MODE_PLAY: //================================
+
+		for( int i=0; i<players.size(); i++ )
+			players[i]->update( ground_set, enemies, dt );
+		
+		for( int i=0; i<enemies.size(); i++ )
+			enemies[i]->update( ground_set, players, dt );
+
+		break;
+
+
+
+		case GAME_MODE_MENU: //================================
+		/*if( ((Player*) players[0])->keys_down[KEY_RETURN] )
+		{
+			main_menu.act( this );
+			(this->*(main_menu.items[0].action))();
+			((Player*) players[0])->keys_down[KEY_RETURN] = false;
+		}*/
+		break;
+	}
+}
+
+void MyGame::soft_quit( void )
+{
+	finished = true;
 }
 
 void MyGame::quit( void )

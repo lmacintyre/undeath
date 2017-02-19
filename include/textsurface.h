@@ -18,6 +18,8 @@ class TextSurface
 		~TextSurface( void );
 		TextSurface( char* data, TTF_Font* font );
 
+		float size_on_screen( void );
+
 		void render( Vec2d where );
 		void render( Rect where );
 };

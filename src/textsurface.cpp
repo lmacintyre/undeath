@@ -15,11 +15,13 @@ class TextSurface
 		TTF_Font* font;
 		Texture* text_image;
 		char* data;
-		
+
 	public:
 		TextSurface( void );
 		~TextSurface( void );
 		TextSurface( char* data, TTF_Font* font );
+
+		float size_on_screen( void );
 
 		void render( Vec2d where );
 		void render( Rect where );
@@ -36,7 +38,7 @@ TextSurface::TextSurface( void )
 
 TextSurface::~TextSurface( void )
 {
-
+	
 }
 
 TextSurface::TextSurface( char* data, TTF_Font* font )
@@ -45,19 +47,22 @@ TextSurface::TextSurface( char* data, TTF_Font* font )
 	this->data = data;
 	this->font = font;
 
-	SDL_Color color = { 0, 0, 0 };
+	SDL_Color color = { 255, 255, 255 };
 	load_surface = TTF_RenderText_Blended( font, data, color );
 
 	text_image = new Texture();
 	text_image->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
 }
 
+float TextSurface::size_on_screen( void )
+{
+	return (float) TTF_FontHeight( font ) / WINDOW_HEIGHT;
+}
+
 void TextSurface::render( Vec2d where )
 {
 	float width = (float) (text_image->get_width()) / WINDOW_WIDTH;
 	float height = (float) (text_image->get_height()) / WINDOW_HEIGHT;
-
-	printf( "w:%f\th:%f\n", width, height );
 
 	text_image->render( Rect( Vec2d( 0.f, 0.f ), 1.f, 1.f ), Rect( where, width, height ) );
 }

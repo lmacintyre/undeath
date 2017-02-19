@@ -6,13 +6,17 @@
 
 #include "geo2d.h"
 
+enum GAME_MODE { GAME_MODE_NONE, GAME_MODE_MENU, GAME_MODE_LOAD, GAME_MODE_PLAY, GAME_MODE_QUIT };
+
 class Game
 {
 	public:
 		bool debug;
+		GAME_MODE mode;
 
 		bool finished;
 		bool fps_cap;
+		bool fullscreen;
 
 		SDL_Window* window;
 		Rect display;
@@ -22,12 +26,17 @@ class Game
 		Game( void );
 		virtual bool initSDL( char* title );
 		virtual bool initGL( void );
+
+		virtual void resize( int w, int h );
+		virtual void toggle_fullscreen();
+
 		virtual void quit( void );
 };
 
 Game::Game( void )
 {
 	debug = true;
+	mode = GAME_MODE_NONE;
 
 	finished = false;
 	window = NULL;
@@ -51,7 +60,8 @@ bool Game::initSDL( char* title )
 	
 	window =
 	SDL_CreateWindow( title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-												WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL );
+												WINDOW_WIDTH, WINDOW_HEIGHT,
+												SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 
 	if( window == NULL )
 	{
@@ -81,6 +91,57 @@ bool Game::initGL( void )
 	return true;
 }
 
+void Game::resize( int w, int h )
+{
+	SDL_SetWindowSize( this->window, w, h );
+
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+	glViewport(0, 0, w, h);
+
+	float perspective_width, perspective_height;
+
+	if( w > h )
+	{
+		perspective_width = (float) w/h;
+		perspective_height = 1.f;
+	} else
+	{
+		perspective_height = (float) h/w;
+		perspective_width = 1.f;
+	}
+
+	glOrtho( -1* perspective_width, perspective_width,
+			 -1* perspective_height, perspective_height,
+			 0.f, 1.f );
+
+	display = Rect( Vec2d( -1* perspective_width, -1* perspective_height ), perspective_width * 2, perspective_height * 2 );
+
+}
+
+void Game::toggle_fullscreen()
+{
+
+	if( fullscreen )
+	{
+		fullscreen = false;
+
+		SDL_SetWindowFullscreen( window, 0 );
+
+		resize( WINDOW_WIDTH, WINDOW_HEIGHT );
+
+	} else {
+
+		fullscreen = true;
+
+		SDL_SetWindowFullscreen( window, SDL_WINDOW_FULLSCREEN );
+
+		SDL_DisplayMode dm;
+		SDL_GetDesktopDisplayMode( 0, &dm );
+
+		resize( dm.w, dm.h );
+	}
+}
 
 void Game::quit( void )
 {
