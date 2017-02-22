@@ -6,7 +6,7 @@
 class Level
 {
 	private:
-
+		
 	public:
 		vector<Block> ground_set;
 		LevelBG background;
