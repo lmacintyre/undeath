@@ -1,6 +1,6 @@
-CC 	= g++
+CC = g++
 ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o bin/textsurface.o bin/menu.o
-GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o
+GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o bin/combat.o
 EXEC = exec/*
 LINKS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
 FLAGS	= -I include
@@ -16,7 +16,7 @@ clean-all:
 
 clean-exec:
 	rm edit $(EXEC)
-
+ 
 
 bin/vec2d.o: src/vec2d.cpp include/vec2d.h
 	$(CC) -c -o bin/vec2d.o src/vec2d.cpp $(LINKS) $(FLAGS)
@@ -65,3 +65,6 @@ bin/levelbg.o: src/levelbg.cpp include/levelbg.h include/display.h include/vec2d
 
 bin/ctrlzone.o: src/ctrlzone.cpp include/ctrlzone.h include/geo2d.h
 	$(CC) -c -o bin/ctrlzone.o src/ctrlzone.cpp $(LINKS) $(FLAGS)
+
+bin/combat.o: src/combat.cpp include/combat.h include/geo2d.h include/animation.h
+	$(CC) -c -o bin/combat.o src/combat.cpp $(LINKS) $(FLAGS)

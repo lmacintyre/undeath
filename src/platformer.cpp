@@ -159,8 +159,8 @@ bool MyGame::init( void )
 
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 
-	enemies.push_back( new EnemySkeleton( Vec2d( 0.5f, 3.f ) ) );
-	enemies.push_back( new EnemySkeleton( Vec2d( 1.f, 3.f ) ) );
+	//enemies.push_back( new EnemySkeleton( Vec2d( 0.f, 2.f ) ) );
+	enemies.push_back( new EnemySkeleton( Vec2d( 1.3f, 0.8f ) ) );
 	vector<directive> bounds;
 
 	//Bottom middle
@@ -351,18 +351,34 @@ void MyGame::poll_input( bool* keys )
 				else mode = GAME_MODE_PLAY;
 				break;
 
+				case SDLK_a:
+				keys[KEY_a] = true;
+				break;
+
 				case SDLK_h:
 				for( int i=0; i<players.size(); i++ ) players[i]->render_hitbox = !players[i]->render_hitbox;
 				for( int i=0; i<enemies.size(); i++ ) enemies[i]->render_hitbox = !enemies[i]->render_hitbox;
 				for( int i=0; i<ground_set.size(); i++ ) ground_set[i].render_hitbox = !ground_set[i].render_hitbox;
 				break;
-				
+
 				case SDLK_f:
 				this->toggle_fullscreen();
 				break;
 
 				case SDLK_q:
 				soft_quit();
+				break;
+
+				case SDLK_s:
+				keys[KEY_s] = true;
+				break;
+
+				case SDLK_x:
+				keys[KEY_x] = true;
+				break;
+
+				case SDLK_z:
+				keys[KEY_z] = true;
 				break;
 
 				case SDLK_UP:
@@ -397,6 +413,22 @@ void MyGame::poll_input( bool* keys )
 			case SDL_KEYUP:
 			switch( event.key.keysym.sym )
 			{
+				case SDLK_a:
+				keys[KEY_a] = false;
+				break;
+
+				case SDLK_s:
+				keys[KEY_s] = false;
+				break;
+
+				case SDLK_z:
+				keys[KEY_z] = false;
+				break;
+
+				case SDLK_x:
+				keys[KEY_x] = false;
+				break;
+
 				case SDLK_UP:
 				keys[KEY_UP] = false;
 				break;

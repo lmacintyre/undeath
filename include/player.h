@@ -6,12 +6,11 @@
 #include "geo2d.h"
 
 #include "actor.h"
+#include "combat.h"
 
 #include <vector>
 
 using std::vector;
-
-enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN, CONTROL_MODE_DEAD };
 
 class Player: public Actor
 {
@@ -22,6 +21,10 @@ class Player: public Actor
 	long last_hit;
 
 	CONTROL_MODE control_mode = CONTROL_MODE_FREE;
+
+	Moveset moveset;
+	Vec2d attack_origin_low, attack_origin_high;
+	long attack_timer;
 
 	int jumpjuice = 0;
 
@@ -38,10 +41,14 @@ class Player: public Actor
 		Animation* idle_to_walk_anim;
 		Animation* death_anim;
 
+		Attack* active_attack = NULL;
+
 		Player( void );
 		~Player( void );
 		Player( Vec2d pos );
-		
+
+		void use_attack( Attack* attack );
+
 		void render( void );
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
 };

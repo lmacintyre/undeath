@@ -6,6 +6,7 @@
 #include "animation.h"
 #include "block.h"
 #include "actor.h"
+#include "combat.h"
 
 #include <vector>
 
@@ -16,9 +17,12 @@ class Enemy: public Actor
 	public:
 		int type;
 
+		CONTROL_MODE control_mode = CONTROL_MODE_FREE;
+
 		Enemy( void );
 		Enemy( int type, Vec2d pos );
 
+		virtual void hit_by( Attack* attack, bool from_right );
 		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
 };
 
@@ -37,6 +41,14 @@ Enemy::Enemy( int type, Vec2d pos )
 	this->type = type;
 	
 	set_position( pos );
+}
+
+void Enemy::hit_by( Attack* attack, bool from_right )
+{
+	if( from_right ) velocity = Vec2d( -0.1f, 0.1f );
+	else velocity = Vec2d( 0.1f, 0.1f );
+
+	control_mode = CONTROL_MODE_HIT;
 }
 
 void Enemy::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt ) {}
@@ -152,37 +164,44 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 		}
 
 		//Check for collision with the control zones
-		for( int j=0; j<ground_set[i].zones.size(); j++ )
-		{
-			CR = collision_test( hitbox[0], ground_set[i].zones[j].zone );
-			if( CR.result )
+		if( control_mode == CONTROL_MODE_FREE )
+			for( int j=0; j<ground_set[i].zones.size(); j++ )
 			{
-				switch( ground_set[i].zones[j].command )
+				CR = collision_test( hitbox[0], ground_set[i].zones[j].zone );
+				if( CR.result )
 				{
-					case DIRECTIVE_WALK_LEFT:
-					if( walk_right ) walk_right = false;
-					break;
+					switch( ground_set[i].zones[j].command )
+					{
+						case DIRECTIVE_WALK_LEFT:
+						if( walk_right ) walk_right = false;
+						break;
 
-					case DIRECTIVE_WALK_RIGHT:
-					if( !walk_right ) walk_right = true;
-					break;
+						case DIRECTIVE_WALK_RIGHT:
+						if( !walk_right ) walk_right = true;
+						break;
 
-					case DIRECTIVE_JUMP:
-					if( grounded ) set_velocity( Vec2d( get_velocity().get_a(),  0.3f ) );
-					break;
+						case DIRECTIVE_JUMP:
+						if( grounded ) set_velocity( Vec2d( get_velocity().get_a(),  0.3f ) );
+						break;
+					}
 				}
 			}
-		}
+	}
+
+	switch( control_mode )
+	{
+		case CONTROL_MODE_FREE:
+		if( !walk_right && get_velocity().get_a() > -0.03 ) dx -= 0.01;
+		else if( walk_right && get_velocity().get_a() < 0.03 ) dx += 0.01;
+		break;
+
+		case CONTROL_MODE_HIT:
+		if( grounded ) control_mode = CONTROL_MODE_FREE;
+		break;
 	}
 
 	//Gravity
 	if( !grounded ) dy -= 0.01f;
-	//Walk
-	else
-	{
-		if( !walk_right && get_velocity().get_a() > -0.03 ) dx -= 0.01;
-		else if( walk_right && get_velocity().get_a() < 0.03 ) dx += 0.01;
-	}
 
 	set_velocity( get_velocity().add( Vec2d( dx, dy ) ) );
 	move( velocity, dt );

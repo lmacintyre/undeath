@@ -3,6 +3,7 @@
 #include "animation.h"
 #include "block.h"
 #include "actor.h"
+#include "combat.h"
 
 #include <vector>
 
@@ -12,10 +13,13 @@ class Enemy: public Actor
 {
 	public:
 		int type;
+
+		CONTROL_MODE control_mode = CONTROL_MODE_FREE;
 		
 		Enemy( void );
 		Enemy( int type, Vec2d pos );
 		
+		virtual void hit_by( Attack* attack, bool from_right );
 		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
 };
 

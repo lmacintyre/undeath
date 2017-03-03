@@ -6,6 +6,8 @@
 #include "col2d.h"
 
 #include "actor.h"
+#include "enemy.h"
+#include "combat.h"
 
 #include "texture.h"
 #include "animation.h"
@@ -19,19 +21,21 @@
 
 using std::vector;
 
-enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_HIT, CONTROL_MODE_INVULN, CONTROL_MODE_DEAD };
-
 class Player: public Actor
 {	
 	bool anim_transition = false;
 	bool dead = false;
 
-	long hit_delay; 
+	long hit_delay;
 	long last_hit;
 
 	CONTROL_MODE control_mode = CONTROL_MODE_FREE;
+	
+	Moveset moveset;
+	Vec2d attack_origin_low, attack_origin_high;
+	long attack_timer;
 
-	int jumpjuice = 0;	
+	int jumpjuice = 0;
 	
 	Rect dead_box;
 
@@ -46,10 +50,14 @@ class Player: public Actor
 		Animation* idle_to_walk_anim;
 		Animation* death_anim;
 
+		Attack* active_attack = NULL;
+
 		Player( void );
 		~Player( void );
 		Player( Vec2d pos );
 		
+		void use_attack( Attack* attack );
+
 		void render( void );
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
 };
@@ -98,9 +106,9 @@ Player::Player( Vec2d pos )
 	maxhp = 3; hp = maxhp;
 	
 	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2) ), 0.2, 0.4  ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2) ), 0.2, 0.4 ) );
 	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
-	
+
 	//LOAD WALK ANIMATION //
 	walk_anim = new Animation();
 	
@@ -118,7 +126,7 @@ Player::Player( Vec2d pos )
 	idle_anim->add_frame( Rect( Vec2d( 0.f	, 0.5f	 ), 0.25f, 0.25f ) );
 	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );
 	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.75f, 0.5f	 ), 0.25f, 0.25f ) );	
+	idle_anim->add_frame( Rect( Vec2d( 0.75f, 0.5f	 ), 0.25f, 0.25f ) );
 	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
 	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );
 
@@ -139,6 +147,25 @@ Player::Player( Vec2d pos )
 	dead_box = Rect( Vec2d( -0.1f, -0.05f ), 0.2f, 0.05f );
 
 	active_anim = idle_anim;
+
+	//ATTACKS//
+	attack_timer = 0;
+
+	attack_origin_high = Vec2d( 0.1f, -0.1f );
+	attack_origin_low = Vec2d( 0.1f, -0.2f );
+
+	Animation* high_punch_anim = new Animation();
+	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+
+	moveset = Moveset(
+		Attack( Rect( Vec2d(0.f, 0.f), 0.1f, 0.1f ), ATTACK_HEIGHT_HIGH, high_punch_anim, 10 ),
+		Attack( Rect( Vec2d(0.f, 0.f), 0.1f, 0.1f ), ATTACK_HEIGHT_HIGH, high_punch_anim, 25 ),
+		Attack( Rect( Vec2d(0.f, 0.f), 0.1f, 0.1f ), ATTACK_HEIGHT_LOW, high_punch_anim, 15 ),
+		Attack( Rect( Vec2d(0.f, 0.f), 0.2f, 0.1f ), ATTACK_HEIGHT_LOW, high_punch_anim, 30 ));
 }
 
 void Player::render( void )
@@ -153,13 +180,44 @@ void Player::render( void )
 		if( t%500 > 250 ) glColor3f( 0.5f, 0.5f, 0.5f );
 		case CONTROL_MODE_DEAD:
 		case CONTROL_MODE_FREE:
+		case CONTROL_MODE_ATTACKING:
 		active_anim->render( sheet, renderbox, !facing_right );
 		break;
 	}
 	glTranslatef( -1 * get_position().get_a(), -1 * get_position().get_b(), 0.f );
 	if( render_hitbox )
+	{
 		for( int i=0; i<hitbox.size(); i++) hitbox[i].draw( 0.f, 0.f, 1.f, false );
+
+		if( active_attack != NULL )
+		{
+			Vec2d scale;
+			if( facing_right )
+				scale = Vec2d(1.f, 1.f);
+			else
+				scale = Vec2d(-1.f, 1.f);
+
+			Vec2d offset;
+			if( active_attack->height == ATTACK_HEIGHT_LOW )
+				offset = position.add( attack_origin_low.multiply(scale) );
+			else
+				offset = position.add( attack_origin_high.multiply(scale) );
+
+			active_attack->hitbox.multiply(scale).add(offset).draw(1.f, 0.f, 1.f, false);
+		}
+	}
 	glPopMatrix();
+}
+
+void Player::use_attack( Attack* attack )
+{
+	if( control_mode == CONTROL_MODE_FREE || control_mode == CONTROL_MODE_INVULN )
+	{
+		active_attack = attack;
+		control_mode = CONTROL_MODE_ATTACKING;
+		active_anim = attack->animation;
+		active_anim->goto_frame( 0 );
+	}
 }
 
 void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt )
@@ -209,7 +267,26 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 	}
 	
 	// Enemy Collision Checks
-	if( control_mode == CONTROL_MODE_FREE )
+	Rect attack_box;
+
+	if( active_attack != NULL )
+	{
+		Vec2d scale;
+		if( facing_right )
+			scale = Vec2d(1.f, 1.f);
+		else
+			scale = Vec2d(-1.f, 1.f);
+
+		Vec2d offset;
+		if( active_attack->height == ATTACK_HEIGHT_LOW )
+			offset = position.add( attack_origin_low.multiply(scale) );
+		else
+			offset = position.add( attack_origin_high.multiply(scale) );
+
+		attack_box = active_attack->hitbox.multiply(scale).add(offset);
+	}
+
+	if( control_mode == CONTROL_MODE_FREE || control_mode == CONTROL_MODE_ATTACKING )
 		for( int i=0; i<enemy_set.size(); i++)
 		{
 			CR = collision_test(hitbox[1], enemy_set[i]->hitbox[1]);
@@ -226,6 +303,19 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 
 				break;
 			}
+
+			//Enemy hit checks
+			if( active_attack != NULL )
+			{
+				CR = collision_test( attack_box, enemy_set[i]->hitbox[1] );
+
+				if( CR.result )
+				{
+					bool facing_right = true;
+					if( CR.out.get_a() < 0 ) facing_right = false;
+					( (Enemy*) enemy_set[i] )->hit_by( active_attack, facing_right );
+				}
+			}
 		}
 
 
@@ -236,7 +326,6 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		if( t > last_hit + hit_delay ) control_mode = CONTROL_MODE_FREE;
 
 		case CONTROL_MODE_FREE:
-
 		if( hp <= 0 ) control_mode = CONTROL_MODE_DEAD;
 
 		if( keys_down[KEY_UP] )
@@ -271,6 +360,29 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 			if( get_velocity().get_a() > 0.01 ) dx -= 0.01;
 			else if( get_velocity().get_a() < -0.01 ) dx += 0.01;
 			else set_velocity( Vec2d( 0, get_velocity().get_b() ) );
+		}
+
+		if( keys_down[KEY_a] )
+		{
+			use_attack(&(moveset.light_punch));
+		} else if( keys_down[KEY_s] )
+		{
+			use_attack(&(moveset.heavy_punch));
+		} else if( keys_down[KEY_z] )
+		{
+			use_attack(&(moveset.light_kick));
+		} else if( keys_down[KEY_x] )
+		{
+			use_attack(&(moveset.heavy_kick));
+		}
+		break;
+
+		case CONTROL_MODE_ATTACKING:
+		if( active_anim->get_current() == active_anim->get_framecount()-1 )
+		{
+			active_anim = idle_anim;
+			control_mode = CONTROL_MODE_FREE;
+			active_attack = NULL;
 		}
 		break;
 
@@ -320,9 +432,9 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 			frame_tick = t;
 		}
 		
-		if( !anim_transition )
+		if( !anim_transition && control_mode == CONTROL_MODE_FREE || control_mode == CONTROL_MODE_INVULN )
 		{
-			if( grounded && active_anim )
+			if( grounded )
 			{
 				if( get_velocity().get_a() == 0 
 					&& active_anim != idle_anim )

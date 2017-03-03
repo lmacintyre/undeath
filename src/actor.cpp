@@ -9,6 +9,8 @@
 #include <vector>
 using std::vector;
 
+enum CONTROL_MODE { CONTROL_MODE_FREE, CONTROL_MODE_ATTACKING, CONTROL_MODE_HIT, CONTROL_MODE_INVULN, CONTROL_MODE_DEAD };
+
 class Actor
 {
 	public:
