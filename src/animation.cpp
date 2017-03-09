@@ -11,14 +11,19 @@ using std::vector;
 
 class Animation
 {	
-	int frames, current;
+	int frame_count;
+	int current_frame;
 	vector<Rect> clip_rects;
 	
 	public:
-		Animation( void );
+		bool loop;
+		bool finished = false;
+
+		Animation( bool loop=false );
+		Animation( vector<Rect> clip_rects, bool loop=false );
 		~Animation( void );
 
-		vector<Rect> get_clip_rects( void );
+		Rect get_clip( int i );
 
 		int get_framecount( void );
 		int get_current( void );
@@ -30,44 +35,84 @@ class Animation
 		void increment( void );
 };
 
-Animation::Animation( void )
+Animation::Animation( bool loop )
 {
-	frames = 0;
-	current = 0;
+	this->loop = loop;
+
+	frame_count = 0;
+	current_frame = 0;
 }
 
-Animation::~Animation( void )
+Animation::Animation( vector<Rect> clip_rects, bool loop )
 {
-	
+	this->clip_rects = clip_rects;
+	this->loop = loop;
+
+	frame_count = clip_rects.size();
+	current_frame = 0;
 }
 
-int Animation::get_framecount( void ) { return frames; }
+Animation::~Animation( void ) {}
 
-int Animation::get_current( void ) { return current; }
-
-vector<Rect> Animation::get_clip_rects( void )
+int Animation::get_framecount( void )
 {
-	return clip_rects;
+	return frame_count;
+}
+
+int Animation::get_current( void )
+{
+	return current_frame;
+}
+
+Rect Animation::get_clip( int i )
+{
+	return clip_rects[i];
 }
 
 void Animation::add_frame( Rect clip )
 {
-	frames++;
+	frame_count++;
 	clip_rects.push_back( clip );	
 }
 
 void Animation::goto_frame( int f )
 {
-	if( f < frames ) current = f;
+	current_frame = f % frame_count;
+	if( current_frame != frame_count - 1 ) finished = false;
 }
 
 void Animation::render( Texture* sheet, Rect where, bool flip )
 {
-	sheet->render( clip_rects[current], where, flip );
+	sheet->render( clip_rects[current_frame], where, flip );
 }
 
 void Animation::increment( void )
 {
-	if( current < frames-1 ) current++;
-	else current = 0;
+	if( !finished )
+	{
+		if( current_frame < frame_count - 1 ) current_frame++;
+		else if( loop ) current_frame = 0;
+		else finished = true;
+	}
+}
+
+Animation* build_animation( int w, int h, int x0, int y0, int x1, int y1, bool loop=false )
+{
+	Animation* result = new Animation(loop);
+
+	int loop_x = w;
+
+	float frame_width = 1.0 / w;
+	float frame_height = 1.0 / h;
+
+	for( int i = y0; i <= y1; i++ )
+	{
+		if( i == y1 ) loop_x = x1;
+		for( int j = x0; j <= x1; j++ )
+		{
+			result->add_frame( Rect( Vec2d( frame_width*j, frame_height*i ), frame_width, frame_height ) );
+		}
+	}
+
+	return result;
 }

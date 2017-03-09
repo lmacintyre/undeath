@@ -17,8 +17,11 @@ class Attack
 		int damage;
 		int frames;
 
+		Vec2d speed;
+		bool speed_relative;
+
 		Attack( void );
-		Attack( Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage );
+		Attack( Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage, Vec2d speed = Vec2d(0.f, 0.f), bool speed_relative = true );
 };
 
 class Moveset

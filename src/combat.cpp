@@ -14,18 +14,24 @@ class Attack
 		int damage;
 		int frames;
 
+		Vec2d speed;
+		bool speed_relative;
+
 		Attack( void );
-		Attack( Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage );
+		Attack( Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage, Vec2d speed = Vec2d(0.f, 0.f), bool speed_relative = true );
 };
 
 Attack::Attack( void ) {}
 
-Attack::Attack(  Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage )
+Attack::Attack(  Rect hitbox, ATTACK_HEIGHT height, Animation* animation, int damage, Vec2d speed, bool speed_relative )
 {
 	this->hitbox = hitbox;
 	this->height = height;
 	this->animation = animation;
 	this->damage = damage;
+
+	this->speed = speed;
+	this->speed_relative = speed_relative;
 
 	frames = animation->get_framecount();
 }

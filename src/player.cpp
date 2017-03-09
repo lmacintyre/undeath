@@ -48,6 +48,7 @@ class Player: public Actor
 		Animation* idle_anim;
 		Animation* jump_anim;
 		Animation* idle_to_walk_anim;
+		Animation* damage_anim;
 		Animation* death_anim;
 
 		Attack* active_attack = NULL;
@@ -57,9 +58,11 @@ class Player: public Actor
 		Player( Vec2d pos );
 		
 		void use_attack( Attack* attack );
+		void set_active_animation( Animation* anim );
 
 		void render( void );
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		void animate( void );
 };
 
 Player::Player( void )
@@ -105,45 +108,19 @@ Player::Player( Vec2d pos )
 
 	maxhp = 3; hp = maxhp;
 	
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2) ), 0.2, 0.4 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.25 ) ), 0.1, 0.05 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.25) ), 0.2, 0.45 ) );
 	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
 
-	//LOAD WALK ANIMATION //
-	walk_anim = new Animation();
-	
-	walk_anim->add_frame( Rect( Vec2d( 0.f	, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.25f, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.5f	, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.f	, 0.25f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.25f, 0.25f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.5f	, 0.25f	), 0.25f, 0.25f ) );
+	//BUILD ANIMATIONS //
 
-	//LOAD IDLE ANIMATION
-	idle_anim = new Animation();
+	walk_anim = build_animation( 8, 8, 0, 0, 6, 0, true );
+	idle_anim = build_animation( 8, 8, 0, 1, 6, 1, true );
+	jump_anim = build_animation( 8, 8, 0, 0, 0, 0, false );
+	idle_to_walk_anim = build_animation( 8, 8, 0, 2, 0, 2, false );
+	damage_anim = build_animation( 8, 8, 0, 3, 0, 3 );
+	death_anim = build_animation( 8, 8, 0, 3, 5, 3 );
 
-	idle_anim->add_frame( Rect( Vec2d( 0.f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.75f, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );
-
-	//LOAD JUMP ANIMATION //
-	jump_anim = new Animation();
-
-	jump_anim->add_frame( Rect( Vec2d( 0.f, 0.f ), 0.25f, 0.25f ) );
-
-	//LOAD IDLE TO WALK ANIMATION //
-	idle_to_walk_anim = new Animation();
-
-	idle_to_walk_anim->add_frame( Rect( Vec2d( 0.f, 0.75f ), 0.25f, 0.25f ) );
-
-	//LOAD DEATH ANIMATION //
-	death_anim = new Animation();
-
-	death_anim->add_frame( Rect( Vec2d( 0.75f, 0.75f), 0.25f, 0.25f) );
 	dead_box = Rect( Vec2d( -0.1f, -0.05f ), 0.2f, 0.05f );
 
 	active_anim = idle_anim;
@@ -154,12 +131,7 @@ Player::Player( Vec2d pos )
 	attack_origin_high = Vec2d( 0.1f, -0.1f );
 	attack_origin_low = Vec2d( 0.1f, -0.2f );
 
-	Animation* high_punch_anim = new Animation();
-	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	high_punch_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
+	Animation* high_punch_anim = build_animation( 8, 8, 0, 4, 2, 4, false );
 
 	moveset = Moveset(
 		Attack( Rect( Vec2d(0.f, 0.f), 0.1f, 0.1f ), ATTACK_HEIGHT_HIGH, high_punch_anim, 10 ),
@@ -220,6 +192,15 @@ void Player::use_attack( Attack* attack )
 	}
 }
 
+void Player::set_active_animation( Animation* anim )
+{
+	if( active_anim != anim )
+	{
+		active_anim = anim;
+		active_anim->goto_frame( 0 );
+	}
+}
+
 void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt )
 {
 	float dx = 0.0f, dy = 0.0f;
@@ -240,14 +221,14 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 				case BLOCK_TYPE_PLATFORM_MEDIUM:
 				case BLOCK_TYPE_PLATFORM_SMALL:
 				if( get_velocity().get_b() <= 0.f )
-				{
+				{/*
 					if( CR.out.get_b() >= 0.f && CR.axis.get_b() != 0.f )
-					{
+					{*/
 						grounded = true;
 						jumpjuice = 10;
 						set_velocity( Vec2d( get_velocity().get_a(), 0.f ) );
 						move( CR.out , 1.f );
-					}
+					//}
 				} break;
 				
 				case BLOCK_TYPE_WALL:
@@ -343,6 +324,7 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 
 		if( keys_down[KEY_LEFT] )
 		{
+			facing_right = false;
 			if( get_velocity().get_a() > -0.10 )
 			{
 				if( grounded ) dx -= 0.01;
@@ -350,6 +332,7 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 			}
 		} if( keys_down[KEY_RIGHT] )
 		{
+			facing_right = true;
 			if( get_velocity().get_a() < 0.10 )
 			{
 				if( grounded ) dx += 0.01;
@@ -378,16 +361,14 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		break;
 
 		case CONTROL_MODE_ATTACKING:
-		if( active_anim->get_current() == active_anim->get_framecount()-1 )
+		if( active_anim->finished )
 		{
-			active_anim = idle_anim;
 			control_mode = CONTROL_MODE_FREE;
 			active_attack = NULL;
 		}
 		break;
 
 		case CONTROL_MODE_HIT:
-		if( hp <= 0 ) control_mode = CONTROL_MODE_DEAD;
 		if( grounded ) control_mode = CONTROL_MODE_INVULN;
 		break;
 
@@ -395,74 +376,51 @@ void Player::update( vector<Block> ground_set, vector<Actor*> enemy_set, float d
 		if( get_velocity().get_a() > 0.01 ) dx -= 0.01;
 		else if( get_velocity().get_a() < -0.01 ) dx += 0.01;
 		else set_velocity( Vec2d( 0, get_velocity().get_b() ) );
-
-		if( active_anim != death_anim )
-		{
-			active_anim = death_anim;
-			hitbox.clear();
-			hitbox.push_back( dead_box.add( this->position ) );
-		}
 		break;
 	}
 	if( !grounded ) dy -= 0.01f;
 
-	set_velocity( get_velocity().add( Vec2d( dx, dy ) ) );
+	velocity = velocity.add( Vec2d( dx, dy ) );
 	
 	move( velocity, dt );
-		
-	//ANIMATE
+	animate();
+}
 
-	if( get_velocity().get_a() > 0.f ) facing_right = true;
-	else if( get_velocity().get_a() < 0.f ) facing_right = false;
-		
-	if( (t - frame_tick) > (1000 / 8) && active_anim != death_anim )
+void Player::animate( void )
+{
+	long t = SDL_GetTicks();
+	if( (t - frame_tick) > (1000 / 8) )
 	{
-		active_anim->increment();
 		frame_tick = t;
-		
-		if( active_anim->get_current() == 0 ) anim_transition = false;
-	
-	
-		if( ( velocity.get_a() != 0 && active_anim == idle_anim )
-			|| ( get_velocity().get_a() == 0 && active_anim == walk_anim ) )
+		active_anim->increment();
+
+		switch( control_mode )
 		{
-			active_anim = idle_to_walk_anim;
-			active_anim->goto_frame( 0 );
-			anim_transition = true;
-			frame_tick = t;
-		}
-		
-		if( !anim_transition && control_mode == CONTROL_MODE_FREE || control_mode == CONTROL_MODE_INVULN )
-		{
+			case CONTROL_MODE_FREE:
+			case CONTROL_MODE_INVULN:
 			if( grounded )
 			{
-				if( get_velocity().get_a() == 0 
-					&& active_anim != idle_anim )
+				if( velocity.get_a() != 0 )
 				{
-					active_anim = idle_anim;
-					idle_anim->goto_frame( 0 );
-					frame_tick = t;
+					if( active_anim == idle_to_walk_anim ) set_active_animation( walk_anim );
+					else if( active_anim != walk_anim ) set_active_animation( idle_to_walk_anim );
 				}
-				else if( get_velocity().get_a() != 0
-					&& active_anim != walk_anim )
-				{
-					active_anim = walk_anim;
-					walk_anim->goto_frame( 0 );
-					frame_tick = t;
-				} 
-			} else
-			{
-				active_anim = jump_anim;
-				frame_tick = t;
+				else set_active_animation( idle_anim );
 			}
+			else set_active_animation( jump_anim );
+			break;
+
+			case CONTROL_MODE_HIT:
+			set_active_animation( damage_anim );
+			break;
+
+			case CONTROL_MODE_ATTACKING:
+			set_active_animation( active_attack->animation );
+			break;
+
+			case CONTROL_MODE_DEAD:
+			set_active_animation( death_anim );
+			break;
 		}
-	}
-
-	if( grounded && active_anim == jump_anim )
-	{
-		if( get_velocity().get_a() == 0 ) active_anim = idle_anim;
-		else active_anim = walk_anim;
-
-		frame_tick = t;
 	}
 }

@@ -39,6 +39,7 @@ class Player: public Actor
 		Animation* idle_anim;
 		Animation* jump_anim;
 		Animation* idle_to_walk_anim;
+		Animation* damage_anim;
 		Animation* death_anim;
 
 		Attack* active_attack = NULL;
@@ -48,9 +49,11 @@ class Player: public Actor
 		Player( Vec2d pos );
 
 		void use_attack( Attack* attack );
+		void set_active_animation( Animation* anim );
 
 		void render( void );
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		void animate( void );
 };
 
 #endif

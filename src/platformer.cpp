@@ -156,9 +156,9 @@ bool MyGame::init( void )
 	main_menu.add_item( MenuItem( "toggle fullscreen", font, &MyGame::toggle_fullscreen ) );
 	main_menu.add_item( MenuItem( "main menu", font, &MyGame::soft_quit ) );
 	main_menu.add_item( MenuItem( "exit", font, &MyGame::soft_quit ) );
-
+	
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
-
+	
 	//enemies.push_back( new EnemySkeleton( Vec2d( 0.f, 2.f ) ) );
 	enemies.push_back( new EnemySkeleton( Vec2d( 1.3f, 0.8f ) ) );
 	vector<directive> bounds;

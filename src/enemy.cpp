@@ -84,37 +84,16 @@ EnemySkeleton::EnemySkeleton( Vec2d pos )
 
 	walk_right = false;
 	
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.2 ) ), 0.1, 0.05 ) );
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.2 ) ), 0.2, 0.4 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.25 ) ), 0.1, 0.05 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.25 ) ), 0.2, 0.4 ) );
 	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
 	
 	frame_tick = 0;
 
-	//LOAD WALK ANIMATION //
-	walk_anim = new Animation();
-	
-	walk_anim->add_frame( Rect( Vec2d( 0.f	, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.25f, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.5f	, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.75f, 0.f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.f	, 0.25f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.25f, 0.25f	), 0.25f, 0.25f ) );
-	walk_anim->add_frame( Rect( Vec2d( 0.5f	, 0.25f	), 0.25f, 0.25f ) );
-
-	//LOAD IDLE ANIMATION
-	idle_anim = new Animation();
-
-	idle_anim->add_frame( Rect( Vec2d( 0.f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.75f, 0.5f	 ), 0.25f, 0.25f ) );	
-	idle_anim->add_frame( Rect( Vec2d( 0.5f	, 0.5f	 ), 0.25f, 0.25f ) );
-	idle_anim->add_frame( Rect( Vec2d( 0.25f, 0.5f	 ), 0.25f, 0.25f ) );	
-
-	//LOAD JUMP ANIM
-	jump_anim = new Animation();
-
-	jump_anim->add_frame( Rect( Vec2d( 0.f, 0.f ), 0.25f, 0.25f ) );
+	//LOAD ANIMATIONS //
+	walk_anim = build_animation( 8, 8, 0, 0, 6, 0, true );
+	idle_anim = build_animation( 8, 8, 0, 1, 6, 1, true );
+	jump_anim = build_animation( 8, 8, 0, 0, 0, 0, false );
 
 	active_anim = idle_anim;
 }
