@@ -17,7 +17,7 @@ class Texture
 		~Texture( void );
 
 		bool load( char* path );
-		bool load( GLuint* pixels, GLuint width, GLuint height );
+		bool load( GLuint* pixels, GLuint width, GLuint height, GLuint mode=GL_RGBA );
 		void render( Rect clip, Rect where, bool flip=false );
 
 		void free_texture( void );

@@ -32,8 +32,9 @@ class Actor
 		Vec2d velocity;
 
 		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		virtual void animate( long t );
 		virtual void move( Vec2d v, float dt );
-		virtual void slow( void );
+		virtual void slow( float step );
 		virtual void render( void );
 
 		virtual Vec2d get_position( void );

@@ -1,5 +1,6 @@
 #include "SDL2/SDL_opengl.h"
 #include "vec2d.h"
+#include <math.h>
 #include <vector>
 
 using std::vector;
@@ -66,7 +67,7 @@ Rect Rect::multiply( Vec2d o )
 
 void Rect::draw( float r, float g, float b, bool fill )
 {
-	glColor3f( r, g, b );
+	glColor4f( r, g, b, 1.f );
 	if( fill )
 	{
 		glBegin( GL_QUADS );
@@ -83,6 +84,55 @@ void Rect::draw( float r, float g, float b, bool fill )
 		glVertex2f( vertices[0].get_a(), vertices[0].get_b() );
 		glEnd();
 	}
+}
+
+class Circle
+{
+	public:
+		Vec2d center;
+		float r;
+
+		Circle( void );
+		Circle( Vec2d center, float r );
+
+		void translate( Vec2d t );
+		void scale( float s );
+
+		Circle add( Vec2d o );
+		Circle multiply( float o );
+};
+
+Circle::Circle( void )
+{
+	center = Vec2d( 0.f, 0.f );
+	r = 0.f;
+}
+
+Circle::Circle( Vec2d center, float r )
+{
+	this->center = center;
+	this->r = r;
+}
+
+void Circle::translate( Vec2d t )
+{
+	center.translate( t );
+}
+
+void Circle::scale( float s )
+{
+	center.scale( Vec2d( s, s ) );
+	r *= abs( s );
+}
+
+Circle Circle::add( Vec2d o )
+{
+	return Circle( center.add(o), r );
+}
+
+Circle Circle::multiply( float s )
+{
+	return Circle( center.multiply( Vec2d( s, s ) ), r * abs(s) );
 }
 
 class Polygon

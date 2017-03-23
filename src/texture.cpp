@@ -1,4 +1,4 @@
- #include "SDL2/SDL.h"
+#include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_opengl.h"
 
@@ -17,7 +17,7 @@ class Texture
 		~Texture( void );
 
 		bool load( char* path );
-		bool load( GLuint* pixels, GLuint width, GLuint height );
+		bool load( GLuint* pixels, GLuint width, GLuint height, GLuint mode=GL_RGBA );
 
 		void render( Rect clip, Rect where, bool flip=false );
 
@@ -47,11 +47,12 @@ Texture::~Texture( void )
 bool Texture::load( char* path )
 {
 	SDL_Surface* load_surface = IMG_Load( path );
-	load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+	load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 }
 
-bool Texture::load( GLuint* pixels, GLuint width, GLuint height )
+bool Texture::load( GLuint* pixels, GLuint width, GLuint height, GLuint mode )
 {
+	printf("\tload func..\n");
 	free_texture();
 
 	texture_width = width;
@@ -59,8 +60,10 @@ bool Texture::load( GLuint* pixels, GLuint width, GLuint height )
 
 	glGenTextures( 1, &texture_id );
 	glBindTexture( GL_TEXTURE_2D, texture_id );
+	printf("\tTexture bound..\n");
 
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels );
+	glTexImage2D( GL_TEXTURE_2D, 0, mode, width, height, 0, mode, GL_UNSIGNED_BYTE, pixels );
+	printf("\tTexture imaged\n");
 
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );

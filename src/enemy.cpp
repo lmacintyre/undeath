@@ -24,6 +24,7 @@ class Enemy: public Actor
 
 		virtual void hit_by( Attack* attack, bool from_right );
 		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		virtual void animate( long t ) {}
 };
 
 Enemy::Enemy( void )
@@ -55,9 +56,12 @@ void Enemy::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt
 
 class EnemySkeleton: public Enemy
 {
-	Animation* walk_anim;
+	 Animation* walk_anim;
 	Animation* idle_anim;
 	Animation* jump_anim;
+	Animation* idle_to_walk_anim;
+	Animation* damage_anim;
+	Animation* death_anim;
 
 	bool walk_right;
 
@@ -66,6 +70,7 @@ class EnemySkeleton: public Enemy
 		EnemySkeleton( Vec2d pos );
 
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		void animate( long t );
 };
 
 EnemySkeleton::EnemySkeleton( void )
@@ -75,6 +80,10 @@ EnemySkeleton::EnemySkeleton( void )
 	active_anim = NULL;
 	walk_anim = NULL;
 	idle_anim = NULL;
+	jump_anim = NULL;
+	idle_to_walk_anim = NULL;
+	damage_anim = NULL;
+	death_anim = NULL;
 	frame_tick = 0;
 }
 
@@ -94,6 +103,9 @@ EnemySkeleton::EnemySkeleton( Vec2d pos )
 	walk_anim = build_animation( 8, 8, 0, 0, 6, 0, true );
 	idle_anim = build_animation( 8, 8, 0, 1, 6, 1, true );
 	jump_anim = build_animation( 8, 8, 0, 0, 0, 0, false );
+	idle_to_walk_anim = build_animation( 8, 8, 0, 2, 0, 2, false );
+	damage_anim = build_animation( 8, 8, 0, 3, 0, 3 );
+	death_anim = build_animation( 8, 8, 0, 3, 5, 3 );
 
 	active_anim = idle_anim;
 }
@@ -143,7 +155,7 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 		}
 
 		//Check for collision with the control zones
-		if( control_mode == CONTROL_MODE_FREE )
+		if( control_mode == CONTROL_MODE_FREE || control_mode == CONTROL_MODE_INVULN )
 			for( int j=0; j<ground_set[i].zones.size(); j++ )
 			{
 				CR = collision_test( hitbox[0], ground_set[i].zones[j].zone );
@@ -170,6 +182,7 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	switch( control_mode )
 	{
 		case CONTROL_MODE_FREE:
+		case CONTROL_MODE_INVULN:
 		if( !walk_right && get_velocity().get_a() > -0.03 ) dx -= 0.01;
 		else if( walk_right && get_velocity().get_a() < 0.03 ) dx += 0.01;
 		break;
@@ -188,23 +201,39 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	if( get_velocity().get_a() > 0.f ) facing_right = true;
 	else if( get_velocity().get_a() < 0.f ) facing_right = false;
 
-	//Animate
+	animate( SDL_GetTicks() );
+}
 
-	long t = SDL_GetTicks();
-	
+void EnemySkeleton::animate( long t )
+{
 	if( (t - frame_tick) > ( 1000 / 8 ) )
 	{
 		frame_tick = t;
-		if( get_velocity().get_a() == 0 && active_anim != idle_anim )
-		{
-			active_anim = idle_anim;
-			active_anim->goto_frame( 0 );
-		} else if( get_velocity().get_a() != 0 && grounded && active_anim != walk_anim )
-		{
-			active_anim = walk_anim;
-			active_anim->goto_frame( 0 );
-		} else if( !grounded && active_anim != jump_anim ) active_anim = jump_anim;
 		active_anim->increment();
+
+		switch( control_mode )
+		{
+			case CONTROL_MODE_FREE:
+			case CONTROL_MODE_INVULN:
+			if( grounded )
+			{
+				if( velocity.get_a() != 0 )
+				{
+					if( active_anim == idle_to_walk_anim ) set_animation( walk_anim );
+					else if( active_anim != walk_anim ) set_animation( idle_to_walk_anim );
+				}
+				else set_animation( idle_anim );
+			}
+			else set_animation( jump_anim );
+			break;
+
+			case CONTROL_MODE_HIT:
+			set_animation( damage_anim );
+			break;
+
+			case CONTROL_MODE_DEAD:
+			set_animation( death_anim );
+			break;
+		}
 	}
 }
- 

@@ -43,17 +43,19 @@ class Player: public Actor
 		Animation* death_anim;
 
 		Attack* active_attack = NULL;
+		bool attack_held = false;
 
 		Player( void );
 		~Player( void );
 		Player( Vec2d pos );
 
-		void use_attack( Attack* attack );
+		void use_attack( Attack* attack, KEY key );
 		void set_active_animation( Animation* anim );
 
 		void render( void );
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
-		void animate( void );
+		void control( long t );
+		void animate( long t );
 };
 
 #endif

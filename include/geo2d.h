@@ -25,6 +25,22 @@ class Rect
 		void draw( float r, float g, float b, bool fill );
 };
 
+class Circle
+{
+	public:
+		Vec2d center;
+		float r;
+
+		Circle( void );
+		Circle( Vec2d center, float r );
+
+		void translate( Vec2d t );
+		void scale( float s );
+
+		Circle add( Vec2d o );
+		Circle multiply( float o );
+};
+
 class Polygon
 {
 	vector<Vec2d> vertices;

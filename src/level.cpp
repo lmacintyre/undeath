@@ -8,13 +8,15 @@ class Level
 	private:
 		
 	public:
+		Texture* platform_sheet;
+		Texture* background_sheet;
+
 		vector<Block> ground_set;
 		LevelBG background;
 
 		vector<Actor*> enemies;
 
 		Level( void );
-		Level( char* path );
 };
 
 Level::Level( void ) {}

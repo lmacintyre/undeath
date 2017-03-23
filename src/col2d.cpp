@@ -14,6 +14,7 @@ using std::vector;
 //
 //	result: true if objects colliding
 //	out:	shortest axis-aligned vector out of collision
+//  axis:	
 //
 class CollisionResult
 {

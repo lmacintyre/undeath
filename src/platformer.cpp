@@ -12,12 +12,15 @@
 ///		-text boxes
 ///		-loop w/ delay (costly)
 //
-/// Health images
 //
 /// More enemy interaction
-/// Enemy block edge finding
+//		-Enemy attacks
+//
+/// Improve control zones?
 //
 ////
+
+#define GL_GLEXT_PROTOTYPES
 
 //// including SDL headers
 //
@@ -25,6 +28,7 @@
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_ttf.h"
 #include "SDL2/SDL_opengl.h"
+#include "SDL2/SDL_opengl_glext.h"
 
 //// including opengl headers
 //
@@ -78,8 +82,12 @@ class MyGame: public Game
 		//Temporary! Put this into some kind of level object!
 		LevelBG background;
 
-		//And this into some kind of HUD wrapper?
+		//And this into some kind of HUD?
 		Texture* hp_tex = NULL;
+
+		//My GOD this is so temporary, build a lighting engine!
+		GLuint lightmap_fbo;
+		Texture* lightsrc_tex = NULL;
 
 		Menu main_menu;
 		
@@ -123,6 +131,9 @@ bool MyGame::initGL( void )
 		perspective_height = (float) WINDOW_HEIGHT / WINDOW_WIDTH;
 		perspective_width = 1.f;
 	}
+
+	glGenBuffers(1, &lightmap_fbo);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightmap_fbo);
 
 	glOrtho( -1* perspective_width, perspective_width,
 			 -1* perspective_height, perspective_height,
@@ -212,30 +223,35 @@ void MyGame::load_textures()
 	if( debug ) printf( "LOAD PLAYER\n" );
 	load_surface = IMG_Load( "res/skele_sheet.png" ); 
 	players[0]->sheet = new Texture();
-	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
+	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 
 	if( debug ) printf( "LOAD ENEMY\n" );
 	Texture* enemy_skel_tex = new Texture;
 	enemy_skel_tex = new Texture();
-	enemy_skel_tex->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h );
+	enemy_skel_tex->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 	for( int i=0; i<enemies.size(); i++) enemies[i]->sheet = enemy_skel_tex;
 
 	if( debug ) printf( "LOAD PLATFORM\n" );
 	Texture* plat_sheet = new Texture();
 	load_surface = IMG_Load( "res/plat_sheet.png" );
-	plat_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+	plat_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 	for( int i=0; i<platforms.size(); i++ ) platforms[i].sheet = plat_sheet;
 
 	if( debug ) printf( "LOAD WALL\n" );
 	Texture* wall_sheet = new Texture();
 	load_surface = IMG_Load( "res/wall_sheet.png" );
-	wall_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+	wall_sheet->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 	for( int i=0; i<walls.size(); i++ ) walls[i].sheet = wall_sheet;
 
 	if( debug ) printf( "LOAD HP\n" );
 	load_surface = IMG_Load( "res/skele_head.png" ); 
 	hp_tex = new Texture();
-	hp_tex->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h );
+	hp_tex->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
+
+	if( debug ) printf( "LOAD LIGHTSRC\n" );
+	load_surface = SDL_LoadBMP( "res/lightsrc.bmp" );
+	lightsrc_tex = new Texture();
+	lightsrc_tex->load( (GLuint*) load_surface->pixels, load_surface->w, load_surface->h, GL_LUMINANCE );
 	SDL_FreeSurface( load_surface );
 
 	//TODO -- Again, level object
@@ -282,7 +298,7 @@ void MyGame::render( void )
 
 	//Render platforms	
 	glColor3f( 1.f, 1.f, 1.f );
-	for( int i=0; i<ground_set.size(); i++ ) ground_set [i].render();
+	for( int i=0; i<ground_set.size(); i++ ) ground_set[i].render();
 
 	//Render enemies
 	for( int i=0; i<enemies.size(); i++ )
@@ -296,8 +312,13 @@ void MyGame::render( void )
 
 	glColor3f( 1.f, 1.f, 1.f );
 	players[0]->render();	
+
 	glPopMatrix();
 	
+	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	lightsrc_tex->render( Rect( Vec2d(0.f, 0.f), 1.f, 1.f ), display );
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	if( mode == GAME_MODE_MENU )
 	{
 		glColor3f( 1.f, 1.f, 1.f );

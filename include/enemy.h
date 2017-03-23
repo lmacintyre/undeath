@@ -21,6 +21,7 @@ class Enemy: public Actor
 		
 		virtual void hit_by( Attack* attack, bool from_right );
 		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		virtual void animate( long t );
 };
 
 class EnemySkeleton: public Enemy
@@ -28,6 +29,9 @@ class EnemySkeleton: public Enemy
 	Animation* walk_anim;
 	Animation* idle_anim;
 	Animation* jump_anim;
+	Animation* idle_to_walk_anim;
+	Animation* damage_anim;
+	Animation* death_anim;
 
 	bool walk_right;
 	
@@ -36,4 +40,5 @@ class EnemySkeleton: public Enemy
 		EnemySkeleton( Vec2d pos );
 
 		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		void animate( long t );
 };
