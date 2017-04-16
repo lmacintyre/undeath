@@ -50,6 +50,7 @@
 #include "block.h"
 #include "player.h"
 #include "enemy.h"
+#include "level.h"
 #include "levelbg.h"
 
 //// utilities from std
@@ -79,7 +80,8 @@ class MyGame: public Game
 		Uint32 last_tick;
 		long delta_t;
 		
-		//Temporary! Put this into some kind of level object!
+		//The level object... it's happening...
+		Level level0;
 		LevelBG background;
 
 		//And this into some kind of HUD?
@@ -95,7 +97,7 @@ class MyGame: public Game
 		MyGame( void ) {};
 		
 		bool init( void );
-		bool initSDL( void ) { return Game::initSDL( "Skeleton's Day Out" ); }
+		bool initSDL( void ) { return Game::initSDL( "Undeath" ); }
 		bool initGL( void );
 
 		void load_textures();
@@ -171,9 +173,13 @@ bool MyGame::init( void )
 	players.push_back( new Player( Vec2d( 0.f, 0.f ) ) );
 	
 	//enemies.push_back( new EnemySkeleton( Vec2d( 0.f, 2.f ) ) );
-	enemies.push_back( new EnemySkeleton( Vec2d( 1.3f, 0.8f ) ) );
-	vector<directive> bounds;
+	EnemyPaladin* ep = new EnemyPaladin( Vec2d( 0.f, 2.8f ) );
+	printf("Returned. OBJ position is (%f,\t%f)\n", ep->get_position().get_a(), ep->get_position().get_b());
+	enemies.push_back( (Actor*) ep );
+	printf("Returned. Enemy position is (%f,\t%f)\n", enemies[0]->get_position().get_a(), enemies[0]->get_position().get_b());
+	
 
+	vector<directive> bounds;
 	//Bottom middle
 	bounds.push_back( DIRECTIVE_WALK_RIGHT );bounds.push_back( DIRECTIVE_WALK_LEFT );
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_LARGE, Vec2d( 0.f, -0.5f ), 1, bounds ) );
@@ -203,6 +209,10 @@ bool MyGame::init( void )
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_MEDIUM, Vec2d( 0.f, 0.5f ), 0, bounds ) );
 	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 0.f, 1.f ), 0, bounds ) );
 
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 3.f, 0.f ), 0, bounds ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 4.f, 0.f ), 0, bounds ) );
+	platforms.push_back( Block( BLOCK_TYPE_PLATFORM_SMALL, Vec2d( 5.f, 0.f ), 0, bounds ) );
+
 	//TODO -- build level class
 	background = LevelBG( NULL, NULL, NULL );
 
@@ -225,11 +235,16 @@ void MyGame::load_textures()
 	players[0]->sheet = new Texture();
 	players[0]->sheet->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
 
-	if( debug ) printf( "LOAD ENEMY\n" );
-	Texture* enemy_skel_tex = new Texture;
-	enemy_skel_tex = new Texture();
+	if( debug ) printf( "LOAD ENEMIES\n" );
+	Texture* enemy_skel_tex = new Texture();
 	enemy_skel_tex->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
-	for( int i=0; i<enemies.size(); i++) enemies[i]->sheet = enemy_skel_tex;
+	//enemies[0]->sheet = enemy_skel_tex;
+
+	Texture* enemy_paladin_tex = new Texture;
+	load_surface = IMG_Load( "res/paladin_sheet.png" );
+	enemy_paladin_tex->load( (GLuint*)load_surface->pixels, load_surface->w, load_surface->h, GL_RGBA );
+	enemies[0]->sheet = enemy_paladin_tex;
+	
 
 	if( debug ) printf( "LOAD PLATFORM\n" );
 	Texture* plat_sheet = new Texture();
@@ -303,7 +318,6 @@ void MyGame::render( void )
 	//Render enemies
 	for( int i=0; i<enemies.size(); i++ )
 	{
-		glColor3f( 0.8f, 0.2f, 0.2f );
 		enemies[i]->render();
 	}
 
@@ -315,9 +329,11 @@ void MyGame::render( void )
 
 	glPopMatrix();
 	
+	/*
 	glBlendFunc(GL_DST_COLOR, GL_ZERO);
 	lightsrc_tex->render( Rect( Vec2d(0.f, 0.f), 1.f, 1.f ), display );
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	*/
 
 	if( mode == GAME_MODE_MENU )
 	{

@@ -7,10 +7,11 @@
 #include "block.h"
 #include "actor.h"
 #include "combat.h"
+#include "controlzone.h"
 
 #include <vector>
 
-enum ENEMY_TYPE { ENEMY_TYPE_SPIKES, ENEMY_TYPE_SKELETON };
+enum ENEMY_TYPE { ENEMY_TYPE_SPIKES, ENEMY_TYPE_SKELETON, ENEMY_TYPE_PALADIN };
 
 class Enemy: public Actor
 {
@@ -18,6 +19,8 @@ class Enemy: public Actor
 		int type;
 
 		CONTROL_MODE control_mode = CONTROL_MODE_FREE;
+
+		vector<ControlZone> control_zones;
 
 		Enemy( void );
 		Enemy( int type, Vec2d pos );
@@ -34,6 +37,7 @@ Enemy::Enemy( void )
 	active_anim = NULL;
 
 	position = Vec2d( 0, 0 );
+	printf("!SET POS TO ZERO!\n");
 	velocity = Vec2d( 0, 0 );
 }
 
@@ -41,7 +45,9 @@ Enemy::Enemy( int type, Vec2d pos )
 {
 	this->type = type;
 	
+	printf("Enemy constructor...\n");
 	set_position( pos );
+	printf("Enemy constructor done. Enemy position is (%f,\t%f)\n", get_position().get_a(), get_position().get_b());
 }
 
 void Enemy::hit_by( Attack* attack, bool from_right )
@@ -54,26 +60,32 @@ void Enemy::hit_by( Attack* attack, bool from_right )
 
 void Enemy::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt ) {}
 
-class EnemySkeleton: public Enemy
+class MobileEnemy: public Enemy
 {
-	 Animation* walk_anim;
-	Animation* idle_anim;
-	Animation* jump_anim;
-	Animation* idle_to_walk_anim;
-	Animation* damage_anim;
-	Animation* death_anim;
+	protected:
+		Animation* walk_anim;
+		Animation* idle_anim;
+		Animation* jump_anim;
+		Animation* idle_to_walk_anim;
+		Animation* damage_anim;
+		Animation* death_anim;
+
+		Attack* active_attack = NULL;
+
+		Vec2d attack_origin_low, attack_origin_high;
 
 	bool walk_right;
 
 	public:
-		EnemySkeleton( void );
-		EnemySkeleton( Vec2d pos );
+		MobileEnemy( void );
+		MobileEnemy( int type, Vec2d pos );
 
-		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
-		void animate( long t );
+		virtual void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+		virtual void animate( long t );
+		virtual void render( void );
 };
 
-EnemySkeleton::EnemySkeleton( void )
+MobileEnemy::MobileEnemy( void )
 {
 	Enemy();
 
@@ -87,31 +99,17 @@ EnemySkeleton::EnemySkeleton( void )
 	frame_tick = 0;
 }
 
-EnemySkeleton::EnemySkeleton( Vec2d pos )
+MobileEnemy::MobileEnemy( int type, Vec2d pos )
 {
-	Enemy( ENEMY_TYPE_SKELETON, pos );
-
-	walk_right = false;
-	
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.25 ) ), 0.1, 0.05 ) );
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.25 ) ), 0.2, 0.4 ) );
-	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
-	
-	frame_tick = 0;
-
-	//LOAD ANIMATIONS //
-	walk_anim = build_animation( 8, 8, 0, 0, 6, 0, true );
-	idle_anim = build_animation( 8, 8, 0, 1, 6, 1, true );
-	jump_anim = build_animation( 8, 8, 0, 0, 0, 0, false );
-	idle_to_walk_anim = build_animation( 8, 8, 0, 2, 0, 2, false );
-	damage_anim = build_animation( 8, 8, 0, 3, 0, 3 );
-	death_anim = build_animation( 8, 8, 0, 3, 5, 3 );
-
-	active_anim = idle_anim;
+	printf("MobileEnemy constructor...\n");
+	Enemy( type, pos );
+	printf("MobileEnemy constructor done. Enemy position is (%f,\t%f)\n", get_position().get_a(), get_position().get_b());
 }
 
-void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt )
+void MobileEnemy::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt )
 {
+	printf("Enemy position is (%f,\t%f)\n", position.get_a(), position.get_b());
+
 	float dx = 0.f, dy = 0.f;
 	grounded = false;
 
@@ -190,6 +188,22 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 		case CONTROL_MODE_HIT:
 		if( grounded ) control_mode = CONTROL_MODE_FREE;
 		break;
+
+		case CONTROL_MODE_ATTACKING:
+		if( active_anim->finished )
+		{
+			active_attack = NULL;
+			control_mode = CONTROL_MODE_FREE;
+		} else {
+			if( active_attack->on_spd_frame() )
+			{
+				Vec2d spd = active_attack->speed;
+				if( !facing_right ) spd.scale( Vec2d( -1.f, 1.f ) );
+				if( active_attack->speed_relative ) velocity.translate( spd );
+				else velocity = spd;
+			}
+		}
+		break;
 	}
 
 	//Gravity
@@ -202,11 +216,14 @@ void EnemySkeleton::update( vector<Block> ground_set, vector<Actor*> enemy_set, 
 	else if( get_velocity().get_a() < 0.f ) facing_right = false;
 
 	animate( SDL_GetTicks() );
+
+
 }
 
-void EnemySkeleton::animate( long t )
+void MobileEnemy::animate( long t )
 {
 	if( (t - frame_tick) > ( 1000 / 8 ) )
+	//if( false )
 	{
 		frame_tick = t;
 		active_anim->increment();
@@ -227,6 +244,10 @@ void EnemySkeleton::animate( long t )
 			else set_animation( jump_anim );
 			break;
 
+			case CONTROL_MODE_ATTACKING:
+			if( active_attack != NULL ) set_animation( active_attack->animation );
+			break;
+
 			case CONTROL_MODE_HIT:
 			set_animation( damage_anim );
 			break;
@@ -236,4 +257,124 @@ void EnemySkeleton::animate( long t )
 			break;
 		}
 	}
+}
+
+void MobileEnemy::render( void )
+{
+	Actor::render();
+
+	if( render_hitbox && active_attack != NULL )
+	{
+		Vec2d scale;
+		if( facing_right )
+			scale = Vec2d(1.f, 1.f);
+		else
+			scale = Vec2d(-1.f, 1.f);
+
+		Vec2d offset;
+		if( active_attack->height == ATTACK_HEIGHT_LOW )
+			offset = position.add( attack_origin_low.multiply(scale) );
+		else
+			offset = position.add( attack_origin_high.multiply(scale) );
+
+		printf( "(%f,\t%f)\n", position.get_a(), position.get_b() );
+
+		//active_attack->hitbox.multiply(scale).add(offset).draw(1.f, 0.f, 1.f, false);
+		active_attack->hitbox.draw(1.f, 0.f, 1.f, false);
+	}
+}
+
+class EnemySkeleton: public MobileEnemy
+{
+	public:
+		EnemySkeleton( void );
+		EnemySkeleton( Vec2d pos );
+};
+
+EnemySkeleton::EnemySkeleton( void )
+{
+	MobileEnemy();
+}
+
+EnemySkeleton::EnemySkeleton( Vec2d pos )
+{
+	MobileEnemy( ENEMY_TYPE_SKELETON, pos );
+
+	walk_right = false;
+	
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.15 ) ), 0.1, 0.05 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.075, -0.15) ), 0.15, 0.30 ) );
+	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
+	
+	frame_tick = 0;
+
+	//LOAD ANIMATIONS //
+	walk_anim = build_animation( 8, 8, 0, 0, 6, 0, true );
+	idle_anim = build_animation( 8, 8, 0, 1, 6, 1, true );
+	jump_anim = build_animation( 8, 8, 0, 0, 0, 0, false );
+	idle_to_walk_anim = build_animation( 8, 8, 0, 2, 0, 2, false );
+	damage_anim = build_animation( 8, 8, 0, 3, 0, 3 );
+	death_anim = build_animation( 8, 8, 0, 3, 5, 3 );
+
+	active_anim = idle_anim;
+}
+
+class EnemyPaladin: public MobileEnemy
+{
+	Attack* heavy_swing;
+
+	public:
+		EnemyPaladin( void );
+		EnemyPaladin( Vec2d pos );
+
+		void update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt );
+
+};
+
+EnemyPaladin::EnemyPaladin( void )
+{
+	MobileEnemy();
+
+	heavy_swing = NULL;
+}
+
+EnemyPaladin::EnemyPaladin( Vec2d pos )
+{
+	MobileEnemy( ENEMY_TYPE_PALADIN, pos );
+
+	walk_right = false;
+	
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.3 ) ), 0.1, 0.05 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.075, -0.15) ), 0.15, 0.30 ) );
+	renderbox = Rect( pos.add( Vec2d( -0.5, -0.5 ) ), 1.f, 1.f );
+	
+	frame_tick = 0;
+
+	// Create attacks
+	Animation* heavy_swing_anim = build_animation(4, 4, 0, 0, 0, 1, false );
+	heavy_swing = new Attack( Rect( Vec2d( 0.f, 0.f), 0.5f, 0.5f ), ATTACK_HEIGHT_HIGH, heavy_swing_anim, 4, 0, 2, Vec2d( 0.f, 0.f), false ) ;
+
+	attack_origin_low = Vec2d( 0.f, 0.f );
+	attack_origin_high = Vec2d( 0.f, 0.f );
+
+	// Build animations
+	walk_anim = build_animation( 4, 4, 0, 2, 1, 3, true );
+	idle_anim = build_animation( 4, 4, 0, 0, 1, 0, true );
+	jump_anim = build_animation( 4, 4, 0, 3, 0, 3, false );
+	idle_to_walk_anim = build_animation( 4, 4, 0, 2, 0, 2, false );
+	damage_anim = build_animation( 4, 4, 2, 0, 2, 0 );
+	death_anim = build_animation( 4, 4, 0, 0, 2, 0 );
+
+	active_anim = idle_anim;
+}
+
+void EnemyPaladin::update( vector<Block> ground_set, vector<Actor*> enemy_set, float dt )
+{
+	//control_mode = CONTROL_MODE_ATTACKING;
+	//active_attack = heavy_swing;
+
+	MobileEnemy::update( ground_set, enemy_set, dt );
+
+	// Look for player
+		// Perform attack
 }

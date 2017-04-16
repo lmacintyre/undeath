@@ -1,6 +1,6 @@
 CC = g++
 ENG	= bin/vec2d.o bin/geo2d.o bin/col2d.o bin/texture.o bin/game.o bin/textsurface.o bin/menu.o
-GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/levelbg.o bin/ctrlzone.o bin/combat.o
+GAME = bin/platformer.o bin/animation.o bin/actor.o bin/player.o bin/enemy.o bin/block.o bin/level.o bin/levelbg.o bin/controlzone.o bin/combat.o
 EXEC = exec/*
 LINKS = -lSDL2 -lSDL2_image -lSDL2_ttf -lGL
 FLAGS	= -I include
@@ -42,7 +42,7 @@ bin/menu.o: src/menu.cpp include/menu.h include/vec2d.h include/geo2d.h include/
 
 
 
-bin/platformer.o: src/platformer.cpp include/display.h include/game.h include/texture.h include/animation.h include/vec2d.h include/col2d.h include/geo2d.h include/event.h include/block.h include/player.h include/enemy.h include/levelbg.h include/ctrlzone.h
+bin/platformer.o: src/platformer.cpp include/display.h include/game.h include/texture.h include/animation.h include/vec2d.h include/col2d.h include/geo2d.h include/event.h include/block.h include/player.h include/enemy.h include/levelbg.h include/controlzone.h
 	$(CC) -c -o bin/platformer.o src/platformer.cpp $(LINKS) $(FLAGS)
 
 bin/animation.o: src/animation.cpp include/animation.h include/texture.h include/geo2d.h
@@ -57,14 +57,17 @@ bin/player.o: src/player.cpp include/player.h include/vec2d.h include/geo2d.h in
 bin/enemy.o: src/enemy.cpp include/enemy.h include/vec2d.h include/event.h include/block.h include/actor.h
 	$(CC) -c -o bin/enemy.o src/enemy.cpp $(LINKS) $(FLAGS)
 
-bin/block.o: src/block.cpp include/block.h include/geo2d.h include/col2d.h include/texture.h include/ctrlzone.h
+bin/block.o: src/block.cpp include/block.h include/geo2d.h include/col2d.h include/texture.h include/controlzone.h
 	$(CC) -c -o bin/block.o src/block.cpp $(LINKS) $(FLAGS)
+
+bin/level.o: src/level.cpp include/level.h include/block.h include/levelbg.h
+	$(CC) -c -o bin/level.o src/level.cpp $(LINKS) $(FLAGS)
 
 bin/levelbg.o: src/levelbg.cpp include/levelbg.h include/display.h include/vec2d.h include/geo2d.h include/texture.h
 	$(CC) -c -o bin/levelbg.o src/levelbg.cpp $(LINKS) $(FLAGS)
 
-bin/ctrlzone.o: src/ctrlzone.cpp include/ctrlzone.h include/geo2d.h
-	$(CC) -c -o bin/ctrlzone.o src/ctrlzone.cpp $(LINKS) $(FLAGS)
+bin/controlzone.o: src/controlzone.cpp include/controlzone.h include/geo2d.h
+	$(CC) -c -o bin/controlzone.o src/controlzone.cpp $(LINKS) $(FLAGS)
 
 bin/combat.o: src/combat.cpp include/combat.h include/geo2d.h include/animation.h
 	$(CC) -c -o bin/combat.o src/combat.cpp $(LINKS) $(FLAGS)

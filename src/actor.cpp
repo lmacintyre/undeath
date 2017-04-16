@@ -37,7 +37,7 @@ class Actor
 
 		virtual Vec2d get_position( void ) { return position; }
 		virtual Vec2d get_velocity( void ) { return velocity; }
-		virtual void set_position( Vec2d p ) { position = p; }
+		virtual void set_position( Vec2d p ) { position = p; printf("SETTING: (%f\t%f)\n", position.get_a(), position.get_b());}
 		virtual void set_velocity( Vec2d v ) { velocity = v; }
 		virtual void set_animation( Animation* a );
 };

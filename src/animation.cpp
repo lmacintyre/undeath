@@ -18,6 +18,8 @@ class Animation
 	public:
 		bool loop;
 		bool finished = false;
+		
+		long frame_ticks;
 
 		Animation( bool loop=false );
 		Animation( vector<Rect> clip_rects, bool loop=false );
@@ -41,6 +43,8 @@ Animation::Animation( bool loop )
 
 	frame_count = 0;
 	current_frame = 0;
+	
+	frame_ticks = 50;
 }
 
 Animation::Animation( vector<Rect> clip_rects, bool loop )
@@ -107,10 +111,21 @@ Animation* build_animation( int w, int h, int x0, int y0, int x1, int y1, bool l
 
 	for( int i = y0; i <= y1; i++ )
 	{
-		if( i == y1 ) loop_x = x1;
-		for( int j = x0; j <= x1; j++ )
+		int j;
+
+		if( i == y0 ) {
+			j = x0;
+		} else j = 0;
+
+		if( i == y1 ) {
+			loop_x = x1+1;
+		} else loop_x = w;
+
+		while( j < loop_x )
 		{
 			result->add_frame( Rect( Vec2d( frame_width*j, frame_height*i ), frame_width, frame_height ) );
+
+			j++;
 		}
 	}
 

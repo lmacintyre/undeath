@@ -4,7 +4,7 @@
 #include "geo2d.h"
 #include "col2d.h"
 #include "texture.h"
-#include "ctrlzone.h"
+#include "controlzone.h"
 
 #include <vector>
 using std::vector;

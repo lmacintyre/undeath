@@ -1,7 +1,7 @@
 #include "geo2d.h"
 #include "col2d.h"
 #include "texture.h"
-#include "ctrlzone.h"
+#include "controlzone.h"
 
 #include <vector>
 using std::vector;
@@ -48,7 +48,7 @@ Block::Block( int type, Vec2d pos, int sprite_id, vector<directive> bounds )
 		left = pos.add( Vec2d( -0.5f, 0.f ) );
 		right = pos.add( Vec2d( 0.5f, 0.f ) );
 
-		hitbox = Rect( pos.add( Vec2d( -0.5f, 0.05f ) ), 1.f, 0.05f );
+		hitbox = Rect( pos.add( Vec2d( -0.5f, 0.075f ) ), 1.f, 0.05f );
 		renderbox = Rect( pos.add( Vec2d( -1.f, -0.25f ) ), 2.f, 0.5f );
 		switch( sprite_id )
 		{
@@ -70,7 +70,7 @@ Block::Block( int type, Vec2d pos, int sprite_id, vector<directive> bounds )
 		left = pos.add( Vec2d( -0.35f, 0.f ) );
 		right = pos.add( Vec2d( 0.35f, 0.f ) );
 
-		hitbox =	Rect( pos.add( Vec2d( -0.35f, 0.05f ) ), 0.7f, 0.05f );
+		hitbox =	Rect( pos.add( Vec2d( -0.35f, 0.075f ) ), 0.7f, 0.05f );
 		renderbox =	Rect( pos.add( Vec2d( -0.5f, -0.25f ) ), 1.f, 0.5f );
 		clip = Rect( Vec2d( 0.f, 0.75f ), 0.5f, 0.25f );		
 		break;
@@ -79,7 +79,7 @@ Block::Block( int type, Vec2d pos, int sprite_id, vector<directive> bounds )
 		left = pos.add( Vec2d( -0.225f, 0.f ) );
 		right = pos.add( Vec2d( 0.225f, 0.f ) );
 
-		hitbox = Rect( pos.add( Vec2d( -0.225f, 0.05f ) ), 0.45f, 0.05f );
+		hitbox = Rect( pos.add( Vec2d( -0.225f, 0.075f ) ), 0.45f, 0.05f );
 		renderbox = Rect( pos.add( Vec2d( -0.5f, -0.25f ) ), 1.f, 0.5f );
 		clip = Rect( Vec2d( 0.5f, 0.75f ), 0.5f, 0.25f );		
 		break;

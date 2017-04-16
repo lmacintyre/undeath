@@ -110,8 +110,8 @@ Player::Player( Vec2d pos )
 
 	maxhp = 3; hp = maxhp;
 	
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.25 ) ), 0.1, 0.05 ) );
-	hitbox.push_back( Rect( pos.add( Vec2d( -0.1, -0.25) ), 0.2, 0.45 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.05, -0.15 ) ), 0.1, 0.05 ) );
+	hitbox.push_back( Rect( pos.add( Vec2d( -0.075, -0.15) ), 0.15, 0.30 ) );
 	renderbox = Rect( pos.add( Vec2d( -0.25, -0.25 ) ), 0.5, 0.5 );
 
 	//BUILD ANIMATIONS //
